@@ -3,6 +3,7 @@ set -euo pipefail
 
 ENGINE_URL="${ENGINE_URL:-https://api.arcade.dev}"
 API_KEY="${ARCADE_API_KEY:?Set ARCADE_API_KEY}"
+USER_ID="${ARCADE_USER_ID:?Set ARCADE_USER_ID}"
 POLL_INTERVAL="${POLL_INTERVAL:-15}"
 PROCESSED_FILE="/tmp/arcade-demo-processed.txt"
 
@@ -15,11 +16,11 @@ while true; do
   result=$(curl -sf -X POST "${ENGINE_URL}/v1/tools/execute" \
     -H "Authorization: Bearer ${API_KEY}" \
     -H "Content-Type: application/json" \
-    -d '{
-      "tool_name": "Gmail.search_threads",
-      "user_id": "shub@arcade.dev",
-      "input": {"query": "subject:(buggy api) is:unread", "max_results": 1}
-    }' 2>/dev/null || echo '{}')
+    -d "{
+      \"tool_name\": \"Gmail.search_threads\",
+      \"user_id\": \"${USER_ID}\",
+      \"input\": {\"query\": \"subject:(buggy api) is:unread\", \"max_results\": 1}
+    }" 2>/dev/null || echo '{}')
 
   thread_id=$(echo "$result" | jq -r '.output.value.threads[0].id // empty')
 
@@ -29,7 +30,7 @@ while true; do
       -H "Content-Type: application/json" \
       -d "{
         \"tool_name\": \"Gmail.get_thread\",
-        \"user_id\": \"shub@arcade.dev\",
+        \"user_id\": \"${USER_ID}\",
         \"input\": {\"thread_id\": \"${thread_id}\"}
       }" 2>/dev/null || echo '{}')
 
