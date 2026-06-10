@@ -1,0 +1,34 @@
+health:
+  status: healthy
+
+access:
+  default_action: allow
+  rules: []
+
+pre:
+  default_action: proceed
+  rules:
+    # HITL: Block sandbox creation until human approves
+    - toolkit: "Daytona"
+      tool: "CreateSandbox"
+      action: block
+      error_message: "HITL_CHECKPOINT: Sandbox creation requires human approval. Config: {{inputs}}"
+
+    # Block direct pushes to main/master
+    - toolkit: "Daytona"
+      tool: "GitPush"
+      input_match: "branch contains main"
+      action: block
+      error_message: "Direct push to protected branch blocked. Use a feature branch."
+
+    # Auto-label AI-generated PRs
+    - toolkit: "Github"
+      tool: "CreatePullRequest"
+      action: proceed
+      override:
+        inputs:
+          labels: '["ai-generated", "auto-triage"]'
+
+post:
+  default_action: proceed
+  rules: []

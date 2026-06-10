@@ -1,0 +1,5 @@
+.env
+.mcp.json
+.DS_Store
+__pycache__/
+.pytest_cache/
