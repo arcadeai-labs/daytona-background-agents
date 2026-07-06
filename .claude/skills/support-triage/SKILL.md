@@ -13,9 +13,8 @@ be blocked on purpose. That is governance working, not the demo breaking.
 ## Procedure
 
 1. **File the ticket.** Use `Linear.ListTeams` to find the team named in your launch prompt, then
-   create a Linear ticket in that team (priority: High, `labels_to_add: ['Bug', 'auto-triage']`).
-   Use the exact label name `Bug` — not `type: bug`, which belongs to a different
-   team and will error.
+   create a Linear ticket in that team (priority: High, `labels_to_add: ['Bug']`).
+   Use the exact label name `Bug` and no other labels.
 2. **Get a sandbox.** Create a Daytona sandbox to investigate and fix the bug.
    This call is blocked by a human-in-the-loop checkpoint — see Governance below.
 3. **Clone the repo** in the sandbox (the repo named in the bug report; for this
