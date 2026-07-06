@@ -105,6 +105,14 @@ api() {
     "$@"
 }
 
+# Tool execution with the project API key (does not expire, unlike the CLI token)
+exec_tool() {
+  /usr/bin/env curl -s -X POST "${ENGINE_URL}/v1/tools/execute" \
+    -H "Authorization: Bearer ${API_KEY}" \
+    -H "Content-Type: application/json" \
+    "$@"
+}
+
 CREATED_PLUGIN_ID=""
 CREATED_HOOK_ID=""
 HITL_WATCHER_PID=""
@@ -466,7 +474,7 @@ fi
 
 # Seed processed file with existing unread emails so we only trigger on NEW ones
 log "Scanning existing unread emails..."
-existing=$(api POST /tools/execute -d "{
+existing=$(exec_tool -d "{
   \"tool_name\": \"Gmail.SearchThreads\",
   \"user_id\": \"${USER_ID}\",
   \"input\": $(echo "$gmail_input" | jq -c ". + {max_results: 50}")
@@ -509,7 +517,7 @@ hitl_watcher &
 HITL_WATCHER_PID=$!
 
 while true; do
-  result=$(api POST /tools/execute -d "{
+  result=$(exec_tool -d "{
     \"tool_name\": \"Gmail.SearchThreads\",
     \"user_id\": \"${USER_ID}\",
     \"input\": $(echo "$gmail_input" | jq -c ". + {max_results: 1}")
@@ -518,7 +526,7 @@ while true; do
   thread_id=$(echo "$result" | jq -r '.output.value.threads[0].id // empty' 2>/dev/null || true)
 
   if [ -n "$thread_id" ] && ! grep -qF "$thread_id" "$PROCESSED_FILE"; then
-    detail=$(api POST /tools/execute -d "{
+    detail=$(exec_tool -d "{
       \"tool_name\": \"Gmail.GetThread\",
       \"user_id\": \"${USER_ID}\",
       \"input\": {\"thread_id\": \"${thread_id}\"}
