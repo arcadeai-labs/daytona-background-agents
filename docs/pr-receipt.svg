@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="560" viewBox="0 0 880 560" font-family="ui-monospace, 'SF Mono', Menlo, monospace">
+  <rect width="880" height="560" fill="#000000"/>
+  <rect x="1" y="1" width="878" height="558" fill="none" stroke="#1f1f1f" stroke-width="2"/>
+
+  <!-- header -->
+  <text x="32" y="52" fill="#c4ff00" font-size="15" letter-spacing="2">GOVERNED BACKGROUND AGENT — ONE RUN, EVERY DECISION</text>
+  <text x="32" y="76" fill="#666" font-size="12">email trigger → Claude Code → Daytona sandbox → PR · nobody watching</text>
+  <line x1="32" y1="92" x2="848" y2="92" stroke="#1f1f1f" stroke-width="1"/>
+
+  <!-- decision rows -->
+  <g font-size="14">
+    <text x="32" y="128" fill="#888">Linear/CreateIssue</text>
+    <text x="360" y="128" fill="#666">file ticket VOI-5, team Voice-to-pr</text>
+    <text x="760" y="128" fill="#c4ff00">ALLOWED</text>
+
+    <text x="32" y="164" fill="#888">Daytona/CreateSandbox</text>
+    <text x="360" y="164" fill="#666">first attempt</text>
+    <text x="742" y="164" fill="#ff0037">BLOCKED</text>
+    <text x="360" y="184" fill="#ff0037" font-size="12">└─ HITL_CHECKPOINT: sandbox creation requires human approval</text>
+
+    <text x="32" y="220" fill="#888">— human approves out of band (30s) —</text>
+
+    <text x="32" y="256" fill="#888">Daytona/CreateSandbox</text>
+    <text x="360" y="256" fill="#666">retry after approval</text>
+    <text x="760" y="256" fill="#c4ff00">ALLOWED</text>
+
+    <text x="32" y="292" fill="#888">Github/WhoAmI</text>
+    <text x="360" y="292" fill="#666">git identity = the acting human</text>
+    <text x="760" y="292" fill="#c4ff00">ALLOWED</text>
+
+    <text x="32" y="328" fill="#888">Daytona/RunCommand</text>
+    <text x="360" y="328" fill="#666">reproduce → fix → tests green</text>
+    <text x="760" y="328" fill="#c4ff00">ALLOWED</text>
+
+    <text x="32" y="364" fill="#888">Daytona/GitPush</text>
+    <text x="360" y="364" fill="#666">branch fix/buggy-api-… (never main)</text>
+    <text x="760" y="364" fill="#c4ff00">ALLOWED</text>
+
+    <text x="32" y="400" fill="#888">Github/CreatePullRequest</text>
+    <text x="360" y="400" fill="#666">labels injected by policy</text>
+    <text x="760" y="400" fill="#c4ff00">ALLOWED</text>
+  </g>
+
+  <line x1="32" y1="424" x2="848" y2="424" stroke="#1f1f1f" stroke-width="1"/>
+
+  <!-- PR result -->
+  <text x="32" y="456" fill="#fff" font-size="14">PR #1  Fix off-by-one in buggy-api pagination offset</text>
+  <text x="32" y="480" fill="#666" font-size="13">author  thierrypdamiba   ·   buggy-api/src/handler.py   +1 −3</text>
+
+  <!-- label chips -->
+  <rect x="32" y="500" width="120" height="26" fill="none" stroke="#ff0037" stroke-width="1.5"/>
+  <text x="46" y="518" fill="#ff0037" font-size="13">ai-generated</text>
+  <rect x="164" y="500" width="110" height="26" fill="none" stroke="#ff0037" stroke-width="1.5"/>
+  <text x="178" y="518" fill="#ff0037" font-size="13">auto-triage</text>
+  <text x="292" y="518" fill="#555" font-size="12">← the agent never asked for these; the gateway stamped them</text>
+</svg>

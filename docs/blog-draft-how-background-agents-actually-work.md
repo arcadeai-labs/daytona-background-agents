@@ -86,18 +86,24 @@ Because the hook fires on every call, the running agent feels the change on its 
 
 ## The audit trail is queryable, not aspirational
 
-Every hook invocation is logged with the endpoint, the tool, the inputs, and the decision. Here's the log from a verification run of this demo, one line per decision:
+Every hook invocation is logged with the endpoint, the tool, the inputs, and the decision. Here is one real run of this demo, from the email trigger to the merged-ready PR, every governed decision in order:
 
 ```
-/pre  Daytona  CreateSandbox      ->  CHECK_FAILED   (HITL block)
-/pre  Daytona  GitPush (main)     ->  CHECK_FAILED   (branch protection)
-/pre  Daytona  GitPush (fix/...)  ->  OK
-/pre  Github   CreatePullRequest  ->  OK + labels override
-/pre  Daytona  CreateSandbox      ->  OK             (after approval)
-/pre  Daytona  CreateSandbox      ->  CHECK_FAILED   (block restored)
+Linear/CreateIssue        ALLOWED   file ticket VOI-5
+Daytona/CreateSandbox     BLOCKED   HITL_CHECKPOINT: needs human approval
+  — human approves out of band (30s) —
+Daytona/CreateSandbox     ALLOWED   retry after approval
+Github/WhoAmI             ALLOWED   git identity = the acting human
+Daytona/RunCommand        ALLOWED   reproduce → fix → tests green
+Daytona/GitPush           ALLOWED   branch fix/buggy-api-… (never main)
+Github/CreatePullRequest  ALLOWED   labels injected by policy
 ```
 
-In production this streams to your SIEM over OpenTelemetry, attributed to the user the agent acted for. When someone asks "what did the agent do last night, and who let it," the answer is a query rather than a forensic project.
+That produced PR #1, authored by the human the agent acted for, touching one file (`buggy-api/src/handler.py`, +1 −3), and wearing two labels the agent never requested:
+
+![One governed run: every CATE decision from trigger to PR, ending in a human-authored PR stamped with policy labels](./pr-receipt.svg)
+
+In production this stream goes to your SIEM over OpenTelemetry, attributed to the user the agent acted for. When someone asks "what did the agent do last night, and who let it," the answer is a query rather than a forensic project.
 
 ## What this adds up to
 
