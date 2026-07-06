@@ -28,12 +28,15 @@ be blocked on purpose. That is governance working, not the demo breaking.
 7. **Verify.** Run the tests again to confirm the fix.
 8. **Ship a branch.** Create a feature branch named `fix/buggy-api-<YYYYMMDD-HHmmss>`
    using the current timestamp, commit, push, and open a PR. Do not push to main —
-   policy blocks it, so don't try.
-9. **Clean up.** Delete the sandbox.
-10. **Close the loop.** Update the Linear ticket to `In Review` with the PR link.
-11. **Tell the team.** Send a Slack message to the channel named in your launch prompt,
+   policy blocks it, so don't try. The PR will be forced to draft by policy.
+9. **Tag your work.** Add the labels `ai-generated` and `auto-triage` to the PR via
+   `Github.ManageLabels`, so reviewers can see at a glance it came from an agent.
+10. **Clean up.** Delete the sandbox.
+11. **Close the loop.** Move the Linear ticket forward and add the PR link. Use
+    `In Review` if that state exists; otherwise use `In Progress`.
+12. **Tell the team.** Send a Slack message to the channel named in your launch prompt,
     summarizing what you did.
-12. **Write the report.** Create a Google Doc with a full triage report.
+13. **Write the report.** Create a Google Doc with a full triage report.
 
 ## Governance
 
