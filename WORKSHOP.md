@@ -176,6 +176,65 @@ the README).
 
 ---
 
+## Attendee hands-on track (no Arcade account required)
+
+The live demo needs one set of credentials (yours). The hands-on doesn't: the
+governance loop runs entirely locally, so every attendee can feel the mechanics
+on their own laptop with just `git`, `go`, and `python3`. Slot this after Act 2,
+or run it as the second half hour if the room skews hands-on.
+
+**1. Clone and reproduce the bug (5 min):**
+
+```bash
+git clone https://github.com/arcadeai-labs/daytona-background-agents
+cd daytona-background-agents/buggy-api
+python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+.venv/bin/python -m pytest -q        # 2 failed, 1 passed — the bug is real
+cd ..
+```
+
+**2. Run the policy server and get told no (10 min):**
+
+```bash
+cd cate-server && go build -o cate-server . && ./cate-server -config ../cate-config.yaml -port 8888 &
+cd ..
+
+# You are the agent. Ask for a sandbox:
+curl -s -X POST localhost:8888/pre -H 'Content-Type: application/json' -d '{
+  "execution_id":"me-1",
+  "tool":{"name":"CreateSandbox","toolkit":"Daytona"},
+  "inputs":{"name":"triage"},
+  "context":{"user_id":"you@example.com"},"servers":{}
+}'
+# -> {"code":"CHECK_FAILED","error_message":"HITL_CHECKPOINT: ..."}
+```
+
+Have them try the other two rules: `GitPush` with `"branch":"main"` (blocked)
+versus a feature branch (OK), and `CreatePullRequest` (OK, but look at the
+`override` in the response: the labels got injected).
+
+**3. Be the human in the loop (5 min):**
+
+```bash
+./hitl-approve.sh            # flip the rule
+# re-run the CreateSandbox curl -> {"code":"OK"}
+./hitl-approve.sh --restore  # put the wall back
+# re-run -> blocked again. Policy changed while "the agent" was running.
+```
+
+**4. Read the receipts (5 min):**
+
+```bash
+./audit-check.sh logs        # every request they just made, with the decision
+```
+
+The debrief writes itself: everything they just did with curl is exactly what
+the agent experienced in the live demo, which is the point. Governance lives in
+the gateway, so it doesn't matter whether the caller is a model or a human with
+curl. Same rules, same denials, same audit trail.
+
+---
+
 ## Contingencies
 
 | Failure | Recovery |
