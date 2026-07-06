@@ -1,9 +1,17 @@
-# Daytona Demo
+# Background agents, governed
 
-Live demo: Arcade's governed AI agent platform + Daytona sandboxed code execution. An email arrives, Claude Code autonomously triages it — creates Linear tickets, spins up sandboxes, fixes bugs, opens PRs — all governed by CATE hooks.
+A working background agent, end to end. An email arrives and Claude Code autonomously triages it: creates a Linear ticket, spins up a Daytona sandbox, fixes the bug, opens a PR, and reports back. Nobody is watching while it works, and that is the point: every action runs through Arcade as the delegated user, checked by Contextual Access policy at the moment of execution, with a queryable audit trail.
+
+Three layers, deliberately separated:
+
+1. **The trigger is yours.** Here it's an email poller (`run.sh`). In your stack it's cron, a webhook, CI, or a workflow engine. Arcade doesn't wake your agent up; it governs what the agent can do once awake.
+2. **The procedure is a skill.** The agent's entire behavior is `.claude/skills/support-triage/SKILL.md`, a markdown file the harness auto-loads. The runtime (Claude Code) is a commodity; the procedure is the asset.
+3. **The governance is config.** `cate-config.yaml` holds three rules: a human-in-the-loop block on sandbox creation, branch protection on main, and auto-labeling of AI-generated PRs. Enforced gateway-side on every call; the agent can't opt out.
+
+Companion reading: [How Does Arcade.dev Work With My Background Agents?](https://www.arcade.dev/blog/arcade-background-agents) covers the why; this repo is the how. `WORKSHOP.md` is a 60-minute live-workshop run-of-show built on this demo.
 
 ```
-Alex's Machine                    Arcade Cloud                     Daytona Cloud
+Your Machine                       Arcade Cloud                     Daytona Cloud
 +---------------------+          +-------------------+            +-----------------+
 | Claude Code         | MCP/HTTP | Engine            |  API       | Sandbox         |
 |  (Arcade GW config) |--------->| - Token Vault     |----------->| - git clone     |
@@ -100,7 +108,7 @@ This single script does everything:
 10. **Seeds** the processed-email list so only NEW emails trigger the agent
 11. **Polls Gmail** every 15 seconds for new emails matching the filter
 
-When a new email arrives, it launches `claude` with a triage prompt that drives the full demo flow.
+When a new email arrives, it launches `claude` with a three-line prompt that names the `support-triage` skill and hands over the email. The skill does the rest.
 
 ### What you'll see:
 
@@ -129,7 +137,7 @@ Once triggered by an email, Claude Code autonomously:
 
 1. **Creates a Linear ticket** — team: DEMO, priority: High, labels: Bug + auto-triage
 2. **Creates a Daytona sandbox** — CATE blocks it (HITL checkpoint). A background watcher detects the block, waits 10 seconds (talk about governance here), then auto-approves. Claude Code retries and succeeds.
-3. **Clones the repo** — `https://github.com/ArcadeAI/demo_Daytona-Arcade`
+3. **Clones this repo** into the sandbox (`DEMO_REPO_URL` in `.env`)
 4. **Navigates to `buggy-api/`** and runs tests — identifies the failing `test_page_two_starts_at_item_11`
 5. **Reads source code** — finds the off-by-one error in `src/handler.py`
 6. **Fixes the bug** — corrects the pagination logic

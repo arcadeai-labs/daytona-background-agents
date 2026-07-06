@@ -18,6 +18,7 @@ GATEWAY_SLUG="${GATEWAY_SLUG:-demo-gateway}"
 CATE_PORT="${CATE_PORT:-8888}"
 POLL_INTERVAL="${POLL_INTERVAL:-15}"
 WATCH_SENDER="${WATCH_SENDER:-}"
+DEMO_REPO_URL="${DEMO_REPO_URL:-https://github.com/arcadeai-labs/daytona-background-agents}"
 
 # Arcade CLI access token + org/project context
 ARCADE_CREDS="${HOME}/.arcade/credentials.yaml"
@@ -524,29 +525,14 @@ while true; do
     log "Email received: ${subject}"
     log "Launching Claude Code..."
 
-    prompt="You are a triage agent. A support email just arrived that needs investigation and resolution.
+    prompt="Use the support-triage skill. A support email just arrived that needs investigation and resolution.
 
 Subject: ${subject}
 
 Body:
 ${body}
 
-Your task:
-1. Use Linear.ListTeams to find the team named 'DEMO', then create a Linear ticket in that team (priority: High, labels_to_add: ['Bug', 'auto-triage']). IMPORTANT: Use the exact label name Bug — NOT type: bug which belongs to a different team and will error.
-2. Create a Daytona sandbox to investigate and fix the bug
-3. Clone the repo https://github.com/ArcadeAI/demo_Daytona-Arcade in the sandbox
-4. Navigate to the buggy-api/ directory
-5. Use Github.WhoAmI to get the current user's name and email, then configure git identity in the cloned repo: git config user.email and git config user.name
-6. Run the tests to identify the failing test
-7. Read the source code, find the bug, fix it
-8. Run tests again to confirm the fix
-9. Create a feature branch named fix/buggy-api-<YYYYMMDD-HHmmss> using the current timestamp, commit, push, and open a PR
-10. Delete the sandbox
-11. Update the Linear ticket to 'In Review' with the PR link
-12. Send a Slack message to #demo-engineering summarizing what you did
-13. Create a Google Doc with a full triage report
-
-Work through each step. If a tool call is denied with HITL_CHECKPOINT, this is a human-in-the-loop governance checkpoint — NOT an error. Explain to the user what you were trying to do, why it was blocked, and that you are waiting for human approval. Then retry the same tool call after a short pause. A background watcher will auto-approve it."
+The buggy repo is ${DEMO_REPO_URL}. The skill does the rest."
 
     unset CLAUDECODE
     claude "$prompt"
