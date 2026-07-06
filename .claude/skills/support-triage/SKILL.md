@@ -12,7 +12,7 @@ be blocked on purpose. That is governance working, not the demo breaking.
 
 ## Procedure
 
-1. **File the ticket.** Use `Linear.ListTeams` to find the team named `DEMO`, then
+1. **File the ticket.** Use `Linear.ListTeams` to find the team named in your launch prompt, then
    create a Linear ticket in that team (priority: High, `labels_to_add: ['Bug', 'auto-triage']`).
    Use the exact label name `Bug` — not `type: bug`, which belongs to a different
    team and will error.
@@ -32,8 +32,8 @@ be blocked on purpose. That is governance working, not the demo breaking.
    policy blocks it, so don't try.
 9. **Clean up.** Delete the sandbox.
 10. **Close the loop.** Update the Linear ticket to `In Review` with the PR link.
-11. **Tell the team.** Send a Slack message to `#demo-engineering` summarizing what
-    you did.
+11. **Tell the team.** Send a Slack message to the channel named in your launch prompt,
+    summarizing what you did.
 12. **Write the report.** Create a Google Doc with a full triage report.
 
 ## Governance

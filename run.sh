@@ -20,6 +20,8 @@ POLL_INTERVAL="${POLL_INTERVAL:-15}"
 WATCH_SENDER="${WATCH_SENDER:-}"
 DEMO_REPO_URL="${DEMO_REPO_URL:-https://github.com/arcadeai-labs/daytona-background-agents}"
 DEMO_QUIET="${DEMO_QUIET:-}"
+LINEAR_TEAM="${LINEAR_TEAM:-DEMO}"
+SLACK_CHANNEL="${SLACK_CHANNEL:-demo-engineering}"
 
 # Arcade CLI access token + org/project context
 ARCADE_CREDS="${HOME}/.arcade/credentials.yaml"
@@ -541,7 +543,7 @@ Subject: ${subject}
 Body:
 ${body}
 
-The buggy repo is ${DEMO_REPO_URL}. The skill does the rest.${QUIET_NOTE}"
+The buggy repo is ${DEMO_REPO_URL}. The Linear team is '${LINEAR_TEAM}'. The Slack channel is #${SLACK_CHANNEL}. The skill does the rest.${QUIET_NOTE}"
 
     unset CLAUDECODE
     claude "$prompt"
