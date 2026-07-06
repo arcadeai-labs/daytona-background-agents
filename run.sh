@@ -454,9 +454,11 @@ PROCESSED_FILE="/tmp/arcade-demo-processed.txt"
 touch "$PROCESSED_FILE"
 
 if [ -n "$WATCH_SENDER" ]; then
-  gmail_query="from:${WATCH_SENDER} subject:(buggy api) is:unread"
+  gmail_input="{\"subject\": \"buggy api\", \"sender\": \"${WATCH_SENDER}\", \"label_ids\": [\"UNREAD\"]}"
+  gmail_query="subject:(buggy api) from:${WATCH_SENDER} label:UNREAD"
 else
-  gmail_query="subject:(buggy api) is:unread"
+  gmail_input="{\"subject\": \"buggy api\", \"label_ids\": [\"UNREAD\"]}"
+  gmail_query="subject:(buggy api) label:UNREAD"
 fi
 
 # Seed processed file with existing unread emails so we only trigger on NEW ones
@@ -464,7 +466,7 @@ log "Scanning existing unread emails..."
 existing=$(api POST /tools/execute -d "{
   \"tool_name\": \"Gmail.SearchThreads\",
   \"user_id\": \"${USER_ID}\",
-  \"input\": {\"query\": \"${gmail_query}\", \"max_results\": 50}
+  \"input\": $(echo "$gmail_input" | jq -c ". + {max_results: 50}")
 }" 2>/dev/null || echo '{}')
 existing_ids=$(echo "$existing" | jq -r '.output.value.threads[]?.id // empty' 2>/dev/null || true)
 if [ -n "$existing_ids" ]; then
@@ -507,7 +509,7 @@ while true; do
   result=$(api POST /tools/execute -d "{
     \"tool_name\": \"Gmail.SearchThreads\",
     \"user_id\": \"${USER_ID}\",
-    \"input\": {\"query\": \"${gmail_query}\", \"max_results\": 1}
+    \"input\": $(echo "$gmail_input" | jq -c ". + {max_results: 1}")
   }" 2>/dev/null || echo '{}')
 
   thread_id=$(echo "$result" | jq -r '.output.value.threads[0].id // empty' 2>/dev/null || true)
