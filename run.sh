@@ -19,6 +19,7 @@ CATE_PORT="${CATE_PORT:-8888}"
 POLL_INTERVAL="${POLL_INTERVAL:-15}"
 WATCH_SENDER="${WATCH_SENDER:-}"
 DEMO_REPO_URL="${DEMO_REPO_URL:-https://github.com/arcadeai-labs/daytona-background-agents}"
+DEMO_QUIET="${DEMO_QUIET:-}"
 
 # Arcade CLI access token + org/project context
 ARCADE_CREDS="${HOME}/.arcade/credentials.yaml"
@@ -526,6 +527,12 @@ while true; do
 
     log "Email received: ${subject}"
     log "Launching Claude Code..."
+    QUIET_NOTE=""
+    if [ -n "$DEMO_QUIET" ]; then
+      QUIET_NOTE="
+
+REHEARSAL MODE: skip the Linear ticket, Slack message, and Google Doc steps entirely. Do not create anything in Linear, Slack, or Google Docs. Only the Daytona sandbox and the GitHub branch/PR."
+    fi
 
     prompt="Use the support-triage skill. A support email just arrived that needs investigation and resolution.
 
@@ -534,7 +541,7 @@ Subject: ${subject}
 Body:
 ${body}
 
-The buggy repo is ${DEMO_REPO_URL}. The skill does the rest."
+The buggy repo is ${DEMO_REPO_URL}. The skill does the rest.${QUIET_NOTE}"
 
     unset CLAUDECODE
     claude "$prompt"
