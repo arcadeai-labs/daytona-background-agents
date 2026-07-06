@@ -6,7 +6,7 @@ Three layers, deliberately separated:
 
 1. **The trigger is yours.** Here it's an email poller (`run.sh`). In your stack it's cron, a webhook, CI, or a workflow engine. Arcade doesn't wake your agent up; it governs what the agent can do once awake.
 2. **The procedure is a skill.** The agent's entire behavior is `.claude/skills/support-triage/SKILL.md`, a markdown file the harness auto-loads. The runtime (Claude Code) is a commodity; the procedure is the asset.
-3. **The governance is config.** `cate-config.yaml` holds three rules: a human-in-the-loop block on sandbox creation, branch protection on main, and auto-labeling of AI-generated PRs. Enforced gateway-side on every call; the agent can't opt out.
+3. **The governance is config.** `cate-config.yaml` holds three rules: a human-in-the-loop block on sandbox creation, branch protection on main, and forcing every agent PR into draft. Enforced gateway-side on every call; the agent can't opt out.
 
 Companion reading: [How Does Arcade.dev Work With My Background Agents?](https://www.arcade.dev/blog/arcade-background-agents) covers the why; this repo is the how. `WORKSHOP.md` is a 60-minute live-workshop run-of-show built on this demo.
 
@@ -142,7 +142,7 @@ Once triggered by an email, Claude Code autonomously:
 5. **Reads source code** — finds the off-by-one error in `src/handler.py`
 6. **Fixes the bug** — corrects the pagination logic
 7. **Re-runs tests** — confirms all pass
-8. **Creates branch, commits, pushes, opens PR** — CATE auto-labels it `ai-generated`
+8. **Creates branch, commits, pushes, opens PR** — CATE forces it to `draft: true`
 9. **Updates the Linear ticket** — moves to "In Review" with PR link
 10. **Sends Slack summary** — posts to #demo-engineering
 
@@ -156,7 +156,7 @@ Defined in `cate-config.yaml`:
 | ------------------------- | ----------------------------------------------------------------------------- |
 | **HITL sandbox approval** | Blocks `Daytona.create_sandbox` — auto-approved after delay                   |
 | **Branch protection**     | Blocks `Daytona.git_push` to `main`/`master`                                  |
-| **PR auto-labeling**      | Injects `ai-generated` + `auto-triage` labels on `Github.create_pull_request` |
+| **PR forced to draft**    | Injects `draft: true` on `Github.CreatePullRequest` — a human must promote it |
 
 ## Stopping the Demo
 

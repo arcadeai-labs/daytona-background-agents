@@ -55,13 +55,13 @@ pre:
       action: block
       error_message: "Direct push to protected branch blocked. Use a feature branch."
 
-    # Auto-label AI-generated PRs
+    # Force every agent-opened PR into draft
     - toolkit: "Github"
       tool: "CreatePullRequest"
       action: proceed
       override:
         inputs:
-          labels: '["ai-generated", "auto-triage"]'
+          draft: true
 ```
 
 Arcade's contextual access hooks call your policy endpoint before every tool execution, with the tool name, the inputs, and the acting user. Your endpoint answers proceed, block, or proceed-with-overrides. Three rules, three distinct flavors of control:
@@ -76,7 +76,7 @@ The skill tells the agent that `HITL_CHECKPOINT` is a governance checkpoint rath
 
 **Constrain.** The branch-protection rule matches on inputs, not just tool names. The agent can push all day to `fix/buggy-api-20260706-141530`, and physically cannot push to `main`. So "the AI opened a PR for review" is a property the system enforces, not a behavior you hope the model exhibits.
 
-**Stamp.** The third rule doesn't block anything. It rewrites the inputs on the way through, so every PR this agent opens arrives labeled `ai-generated` and `auto-triage`. The agent doesn't cooperate with being labeled and can't avoid it. Your review process gets a reliable signal about which PRs came from an agent, guaranteed by the gateway rather than by prompt engineering.
+**Stamp.** The third rule doesn't block anything. It rewrites the inputs on the way through, forcing `draft: true` onto every `CreatePullRequest` call the agent makes. So an agent physically cannot open a ready-to-merge PR — every one arrives as a draft that a human has to promote. The agent can pass `draft: false`; the gateway overwrites it. This is worth dwelling on, because the tempting version — "tell the agent in its prompt to always open drafts" — is exactly the guarantee you don't have: a prompt is a request, and the whole point of governance is the thing the agent can't talk its way out of. The override is on a real parameter the tool accepts, enforced gateway-side, not a label bolted on by convention.
 
 ## Just-in-time means the answer can change while the job sleeps
 
@@ -96,12 +96,12 @@ Daytona/CreateSandbox     ALLOWED   retry after approval
 Github/WhoAmI             ALLOWED   git identity = the acting human
 Daytona/RunCommand        ALLOWED   reproduce → fix → tests green
 Daytona/GitPush           ALLOWED   branch fix/buggy-api-… (never main)
-Github/CreatePullRequest  ALLOWED   labels injected by policy
+Github/CreatePullRequest  ALLOWED   draft: true injected by policy
 ```
 
-That produced PR #1, authored by the human the agent acted for, touching one file (`buggy-api/src/handler.py`, +1 −3), and wearing two labels the agent never requested:
+That produced PR #1, authored by the human the agent acted for, touching one file (`buggy-api/src/handler.py`, +1 −3), opened as a draft the agent couldn't opt out of:
 
-![One governed run: every CATE decision from trigger to PR, ending in a human-authored PR stamped with policy labels](./pr-receipt.svg)
+![One governed run: every CATE decision from trigger to PR, ending in a human-authored draft PR the gateway forced open](./pr-receipt.svg)
 
 In production this stream goes to your SIEM over OpenTelemetry, attributed to the user the agent acted for. When someone asks "what did the agent do last night, and who let it," the answer is a query rather than a forensic project.
 

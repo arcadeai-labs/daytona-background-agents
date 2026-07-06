@@ -43,7 +43,8 @@ be blocked on purpose. That is governance working, not the demo breaking.
   after a short pause. An approval watcher unblocks it out of band.
 - Pushes to `main` are blocked by policy. Always work on a feature branch and open
   a PR.
-- Your PRs are auto-labeled `ai-generated` / `auto-triage` by policy. You don't
-  add these labels; the gateway injects them.
+- Every PR you open is forced to `draft` by policy — the gateway injects
+  `draft: true` on `CreatePullRequest` whether you ask for it or not. A human must
+  promote it to ready-to-merge. Don't fight it; that's the design.
 - Every call you make is in the audit log. Work as if the log will be read,
   because it will.

@@ -44,8 +44,8 @@ cat cate-config.yaml
 ```
 
 > "And this is the entire policy layer. Sandbox creation blocked until a human
-> approves. Pushes to main blocked always. And every PR this agent opens gets
-> ai-generated labels injected on the way through. Three rules: stop, constrain,
+> approves. Pushes to main blocked always. And every PR this agent opens is
+> forced into draft on the way through. Three rules: stop, constrain,
 > stamp. Enforced at the gateway, so the agent can't opt out."
 
 ```bash
@@ -100,9 +100,9 @@ effect). The agent retries the same call and proceeds.*
 - tests fail → fix → tests pass
 - branch `fix/buggy-api-<timestamp>` pushed → "it can't push to main; policy
   matches on the branch input itself, so don't-touch-main is enforced, not hoped"
-- *alt-tab to GitHub:* the PR, labeled `ai-generated` + `auto-triage`
+- *alt-tab to GitHub:* the PR — opened as a **draft** the agent couldn't opt out of
 
-> "The agent never asked for those labels. The gateway rewrote the PR inputs on
+> "The agent never asked to open a draft. The gateway rewrote the PR inputs on
 > the way through. Your reviewers get a guaranteed signal about which PRs came
 > from an agent."
 

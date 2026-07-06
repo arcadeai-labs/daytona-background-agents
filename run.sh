@@ -175,7 +175,7 @@ hitl_watcher() {
                     "action": "proceed",
                     "override": {
                       "inputs": {
-                        "labels": "[\"ai-generated\", \"auto-triage\"]"
+                        "draft": true
                       }
                     }
                   }
@@ -213,7 +213,7 @@ hitl_watcher() {
                     "action": "proceed",
                     "override": {
                       "inputs": {
-                        "labels": "[\"ai-generated\", \"auto-triage\"]"
+                        "draft": true
                       }
                     }
                   }

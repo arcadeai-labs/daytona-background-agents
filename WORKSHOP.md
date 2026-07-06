@@ -83,7 +83,7 @@ cat cate-config.yaml
 
 > "This is the policy. Three rules, three flavors of governance. Sandbox creation
 > is blocked pending a human: that's stop. Pushes to main are blocked always:
-> that's constrain. PRs get ai-generated labels injected: that's stamp. The agent
+> that's constrain. Every PR is forced into draft: that's stamp. The agent
 > can't opt out of any of them, because they run gateway-side, not agent-side."
 
 ```bash
@@ -133,7 +133,7 @@ Mostly narration while the agent runs. Beats to call out as they scroll past:
 - Failing test reproduced, fix applied, tests green.
 - Branch `fix/buggy-api-<timestamp>` pushed. If anyone asks "what if it pushed to
   main": it can't. Offer to prove it in Q&A by asking the agent to try.
-- PR opens **with `ai-generated` and `auto-triage` labels the agent never asked
+- PR opens **as a draft the agent never asked
   for**. Show the PR in the browser. Policy stamped it.
 - Ticket moves to In Review, Slack summary lands in `#demo-engineering`.
 
@@ -211,7 +211,7 @@ curl -s -X POST localhost:8888/pre -H 'Content-Type: application/json' -d '{
 
 Have them try the other two rules: `GitPush` with `"branch":"main"` (blocked)
 versus a feature branch (OK), and `CreatePullRequest` (OK, but look at the
-`override` in the response: the labels got injected).
+`override` in the response: `draft: true` got injected).
 
 **3. Be the human in the loop (5 min):**
 

@@ -31,7 +31,7 @@ if [ "${1:-}" = "--restore" ]; then
             "action": "proceed",
             "override": {
               "inputs": {
-                "labels": "[\"ai-generated\", \"auto-triage\"]"
+                "draft": true
               }
             }
           }
@@ -66,7 +66,7 @@ else
             "action": "proceed",
             "override": {
               "inputs": {
-                "labels": "[\"ai-generated\", \"auto-triage\"]"
+                "draft": true
               }
             }
           }
