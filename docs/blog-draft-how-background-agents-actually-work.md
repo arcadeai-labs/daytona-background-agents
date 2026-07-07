@@ -2,7 +2,7 @@
 
 *Draft — technical companion to [How Does Arcade.dev Work With My Background Agents?](https://www.arcade.dev/blog/arcade-background-agents). Target: AI developers evaluating this for production. Every code block below is from a working repo: [arcadeai-labs/daytona-background-agents](https://github.com/arcadeai-labs/daytona-background-agents).*
 
-Our last post on background agents made four claims: authorization is delegated rather than shared, permissions are checked at the moment of action, the agent waits when consent is genuinely needed, and every action stays attributable. Those are the right claims. This post is what they look like in running code.
+Our last post on background agents, by Megan McMahon (Strategic Account Executive at Arcade), made four claims: authorization is delegated rather than shared, permissions are checked at the moment of action, the agent waits when consent is genuinely needed, and every action stays attributable. Those are the right claims. This post is what they look like in running code.
 
 The demo we'll walk through is a background support engineer. An email arrives describing a bug. With nobody watching, an agent files a Linear ticket, spins up a Daytona sandbox, reproduces the bug, fixes it, opens a PR, updates the ticket, and posts a summary to Slack. The interesting part is not that it can do this. The interesting part is everything that constrains it while it does.
 
