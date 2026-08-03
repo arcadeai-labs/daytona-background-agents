@@ -21,7 +21,7 @@ pre:
       action: block
       error_message: "Direct push to protected branch blocked. Use a feature branch."
 
-    # Force every agent-opened PR into draft — a human must promote it.
+    # Force every agent-opened PR into draft - a human must promote it.
     # (CreatePullRequest has no `labels` param; `draft` is a real field, so
     # this override is actually enforced by the gateway, not just requested.)
     - toolkit: "Github"

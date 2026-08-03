@@ -1,6 +1,6 @@
 # How a governed background agent actually works
 
-*Draft — technical companion to [How Does Arcade.dev Work With My Background Agents?](https://www.arcade.dev/blog/arcade-background-agents). Target: AI developers evaluating this for production. Every code block below is from a working repo: [arcadeai-labs/daytona-background-agents](https://github.com/arcadeai-labs/daytona-background-agents).*
+*Draft - technical companion to [How Does Arcade.dev Work With My Background Agents?](https://www.arcade.dev/blog/arcade-background-agents). Target: AI developers evaluating this for production. Every code block below is from a working repo: [arcadeai-labs/daytona-background-agents](https://github.com/arcadeai-labs/daytona-background-agents).*
 
 Our last post on background agents, by Megan McMahon (Strategic Account Executive at Arcade), made four claims: authorization is delegated rather than shared, permissions are checked at the moment of action, the agent waits when consent is genuinely needed, and every action stays attributable. Those are the right claims. This post is what they look like in running code.
 

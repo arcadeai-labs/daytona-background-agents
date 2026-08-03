@@ -8,8 +8,8 @@ between them are permitted, and how the work graph forms at runtime.
 
 Two things a loop can't express, both on screen below:
 
-  concurrency   — three reviewers dispatched at once, not one after another
-  topology      — a human checkpoint is a node, so a block stalls its
+  concurrency   - three reviewers dispatched at once, not one after another
+  topology      - a human checkpoint is a node, so a block stalls its
                   subtree while unrelated nodes keep working
 
 And the part that matters for governance: in a graph, policy attaches to
@@ -17,7 +17,7 @@ And the part that matters for governance: in a graph, policy attaches to
 reviewer approved" is an edge rule. That's the same check cate-config.yaml
 makes at the gateway, expressed in the topology instead of the prompt.
 
-No credentials, no network — each node sleeps for its simulated cost.
+No credentials, no network - each node sleeps for its simulated cost.
 
     python3 examples/graph_engineering.py
     python3 examples/graph_engineering.py --linear     # the same org, one loop
@@ -82,7 +82,7 @@ def say(node, event, detail=""):
 def run_node(name, kind, cost_ms, reviews_pass):
     """Returns True if the node completed, False if it must be retried."""
     if kind == "human" and elapsed_ms() < HUMAN_APPROVES_AFTER_MS:
-        say(name, "BLOCKED", "HITL_CHECKPOINT — subtree stalls, siblings continue")
+        say(name, "BLOCKED", "HITL_CHECKPOINT - subtree stalls, siblings continue")
         return False
     say(name, "start")
     time.sleep(cost_ms / 1000)
@@ -148,7 +148,7 @@ def run_graph(reviews_pass):
                         denied.append(blocked_edge)
                         src, dst = blocked_edge
                         say(dst, "DENIED", f"edge {src} -> {dst}: {EDGE_POLICY[blocked_edge]}")
-                    # Prune the whole unreachable subtree, not just this node —
+                    # Prune the whole unreachable subtree, not just this node -
                     # otherwise its dependents wait on a node that never arrives.
                     for pruned in unreachable_from(n, pending):
                         pending.pop(pruned, None)

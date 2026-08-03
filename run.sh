@@ -51,10 +51,10 @@ BASE="/v1/orgs/${ORG_ID}/projects/${PROJECT_ID}"
 
 # Exact tools needed for the demo flow
 DEMO_TOOLS=(
-  # Gmail — search and read emails
+  # Gmail - search and read emails
   Gmail.SearchThreads
   Gmail.GetThread
-  # Linear — create/update/list tickets
+  # Linear - create/update/list tickets
   Linear.CreateIssue
   Linear.UpdateIssue
   Linear.TransitionIssueState
@@ -62,7 +62,7 @@ DEMO_TOOLS=(
   Linear.ListTeams
   Linear.ListLabels
   Linear.ListWorkflowStates
-  # Daytona — sandbox lifecycle, code, git
+  # Daytona - sandbox lifecycle, code, git
   Daytona.CreateSandbox
   Daytona.DeleteSandbox
   Daytona.GetSandbox
@@ -82,12 +82,12 @@ DEMO_TOOLS=(
   Daytona.ListFiles
   Daytona.FindFiles
   Daytona.SearchContent
-  # GitHub — identity + create PR
+  # GitHub - identity + create PR
   Github.WhoAmI
   Github.CreatePullRequest
   Github.CreateBranch
   Github.GetRepository
-  # Slack — send summary
+  # Slack - send summary
   Slack.SendMessage
   Slack.ListConversations
 )
@@ -183,7 +183,7 @@ hitl_watcher() {
               }
             }' > /dev/null 2>&1
 
-          log "HITL APPROVED — sandbox creation unblocked"
+          log "HITL APPROVED - sandbox creation unblocked"
           echo "$block_id" >> "$seen_file"
 
           # Wait for sandbox to be created, then restore the block
@@ -223,7 +223,7 @@ hitl_watcher() {
           log "HITL block restored for next run"
 
           # Deliberately NOT clearing /_logs here. The seen_file above already
-          # dedupes by execution_id, so re-triggering isn't a risk — and wiping
+          # dedupes by execution_id, so re-triggering isn't a risk - and wiping
           # the log destroys the CHECK_FAILED entry for the block that just
           # happened, which is the single most important line in the audit
           # trail. Act 4 shows the denial; it has to still be there.
@@ -438,7 +438,7 @@ auth_url=$(echo "$auth_response" | jq -r '.url // empty')
 if [ "$auth_status" = "completed" ]; then
   log "Google auth: already authorized"
 elif [ -n "$auth_url" ]; then
-  log "Google auth required — opening browser..."
+  log "Google auth required - opening browser..."
   open "$auth_url" 2>/dev/null || echo "  Visit: ${auth_url}"
 
   auth_id=$(echo "$auth_response" | jq -r '.id')
@@ -454,7 +454,7 @@ elif [ -n "$auth_url" ]; then
     fi
   done
   if [ "$authorized" = "false" ]; then
-    log "Google auth not completed yet — continuing anyway (auth will be prompted on first Gmail tool use)"
+    log "Google auth not completed yet - continuing anyway (auth will be prompted on first Gmail tool use)"
   fi
 else
   log "WARNING: Auth response: ${auth_response}"

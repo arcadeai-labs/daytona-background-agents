@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Participant onboarding: API key in, working MCP gateway out. No dashboard
-# clicking — the gateway is created through the same management API run.sh uses.
+# clicking - the gateway is created through the same management API run.sh uses.
 #
 #   ./onboard.sh
 #
@@ -48,7 +48,7 @@ existing=$(curl -sf "${BASE}/gateways" "${auth[@]}" \
 if [ -n "$existing" ]; then
   curl -sf -X PATCH "${BASE}/gateways/${existing}" "${auth[@]}" \
     -d "{\"tool_filter\": {\"allowed_tools\": ${TOOLS}}}" > /dev/null
-  echo "      already existed — tools updated (${existing})"
+  echo "      already existed - tools updated (${existing})"
 else
   resp=$(curl -s -X POST "${BASE}/gateways" "${auth[@]}" -d "{
     \"name\": \"${GATEWAY_SLUG}\",
@@ -60,7 +60,7 @@ else
   gw_id=$(echo "$resp" | jq -r '.id // empty')
   if [ -z "$gw_id" ]; then
     echo "      FAILED: $(echo "$resp" | head -c 300)"
-    echo "      (a key/ID typo shows up here — check all three values)"
+    echo "      (a key/ID typo shows up here - check all three values)"
     exit 1
   fi
   echo "      created (${gw_id})"
@@ -86,7 +86,7 @@ tools_seen=$(mcp -H "Mcp-Session-Id: ${session}" \
 if [ "${tools_seen}" -gt 0 ]; then
   echo "      gateway is serving ${tools_seen} tools"
 else
-  echo "      WARNING: handshake returned no tools — the gateway may need a"
+  echo "      WARNING: handshake returned no tools - the gateway may need a"
   echo "      few seconds; re-run this script to re-check."
 fi
 
@@ -114,4 +114,4 @@ echo
 echo "    \"What Arcade tools can you reach? Use one to tell me how many"
 echo "     open issues arcadeai-labs/daytona-background-agents has.\""
 echo
-echo "  The first GitHub call returns an OAuth link — approve it once."
+echo "  The first GitHub call returns an OAuth link - approve it once."

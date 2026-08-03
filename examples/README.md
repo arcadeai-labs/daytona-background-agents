@@ -1,7 +1,7 @@
 # Loop and graph engineering, minimally
 
 Two runnable examples for the workshop's middle section. Both are stdlib-only
-Python, no credentials, no network, no model — the control flow is the whole
+Python, no credentials, no network, no model - the control flow is the whole
 point, so nothing else is on screen. Attendees can run them on a laptop with
 `python3` and nothing else, same as the hands-on policy track in `WORKSHOP.md`.
 
@@ -12,12 +12,12 @@ python3 examples/graph_engineering.py
 
 ## Loop engineering
 
-> Designing the agentic loop — reason, act, observe, repeat — so an agent
+> Designing the agentic loop - reason, act, observe, repeat - so an agent
 > drives itself toward a goal instead of being prompted step by step. Coined
 > mid-2026 as the successor to prompt engineering.
 
 `loop_engineering.py` runs a fix-verify loop against a scratch copy of
-`buggy-api/` (the planted bug survives — it copies to a temp dir). The model's
+`buggy-api/` (the planted bug survives - it copies to a temp dir). The model's
 proposals are canned; everything the *loop* contributes is real:
 
 | Concern | Why it's the loop's job, not the model's |
@@ -43,7 +43,7 @@ can't talk its way around it.
 
 ## Graph engineering
 
-> Designing the multi-agent *organization* as a topology — which nodes exist
+> Designing the multi-agent *organization* as a topology - which nodes exist
 > (agents, deterministic functions, routers, human checkpoints), which
 > transitions are permitted, and how the work graph forms at runtime. Loops
 > made agent behavior programmable; graphs make agent orgs programmable.
@@ -51,7 +51,7 @@ can't talk its way around it.
 `graph_engineering.py` runs the same triage work as a 17-node graph. Three
 things a loop can't express:
 
-**Concurrency.** Three reviewers — correctness, security, tests — dispatch
+**Concurrency.** Three reviewers - correctness, security, tests - dispatch
 simultaneously off `fix`. A loop reviews sequentially and pays 3x.
 
 **Topology.** The human checkpoint is a *node*. While it's blocked,
@@ -59,7 +59,7 @@ simultaneously off `fix`. A loop reviews sequentially and pays 3x.
 linear version a block stops the world.
 
 **Governed edges.** `EDGE_POLICY` refuses the `verdict -> push` transition
-unless 2 of 3 reviews pass. Policy on the edge, not in the prompt — the same
+unless 2 of 3 reviews pass. Policy on the edge, not in the prompt - the same
 move `cate-config.yaml` makes at the gateway, expressed as topology.
 
 ```bash
@@ -84,5 +84,5 @@ agent had to be trusted to skip its own work.
 Between Act 1 (show the pieces) and Act 2 (fire the trigger). By then the room
 has read `SKILL.md` as 13 numbered steps; these two examples are the answer to
 "what if step 6 doesn't work the first time" (loop) and "what if the steps
-aren't a line" (graph) — and both end on governance, which is where Act 2 picks
+aren't a line" (graph) - and both end on governance, which is where Act 2 picks
 up.

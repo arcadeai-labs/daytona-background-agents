@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Send the trigger email that wakes the background agent.
 #
-# The demo's trigger is deliberately external — Arcade governs what the agent
+# The demo's trigger is deliberately external - Arcade governs what the agent
 # may do, not when it wakes up. But "email yourself from your phone" is a bad
 # first step for someone trying the demo alone, so this does it for you.
 #
@@ -20,9 +20,9 @@ ENGINE_URL="${ENGINE_URL:-https://api.arcade.dev}"
 : "${ARCADE_USER_ID:?ARCADE_USER_ID missing in .env}"
 TO="${1:-$ARCADE_USER_ID}"
 
-# The poller matches on subject:(buggy api) — see run.sh. Keep those two words.
+# The poller matches on subject:(buggy api) - see run.sh. Keep those two words.
 SUBJECT="buggy api pagination is broken"
-BODY="Hi — page 1 of /items is returning items 11 through 20 instead of 1 through 10, and item 1 through 10 never appear at all. Page 2 repeats what page 1 showed. Looks like an off-by-one in the pagination offset. Customers are seeing it. Can someone take a look?
+BODY="Hi - page 1 of /items is returning items 11 through 20 instead of 1 through 10, and item 1 through 10 never appear at all. Page 2 repeats what page 1 showed. Looks like an off-by-one in the pagination offset. Customers are seeing it. Can someone take a look?
 
 Thanks,
 A customer"
@@ -43,7 +43,7 @@ print(json.dumps({
 PY
 )")
 
-# An unauthorized send comes back with a URL to click, not an error — surface it.
+# An unauthorized send comes back with a URL to click, not an error - surface it.
 auth_url=$(printf '%s' "$response" | python3 -c "
 import json,sys
 try: d=json.load(sys.stdin)

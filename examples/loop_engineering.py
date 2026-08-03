@@ -4,15 +4,15 @@
 The model proposes; the loop decides whether to keep going. Everything
 interesting here is the loop's job, not the model's:
 
-  budget        — a hard cap on iterations, so a confused agent stops
-  exit test     — an objective signal for done (tests green), not self-report
-  progress      — the failure signature must change, or we're spinning
-  guardrail     — some edits are refused no matter what the model proposes
-  verification  — every patch is re-tested before it counts
-  revert        — a failed patch is undone, so attempts don't stack
+  budget        - a hard cap on iterations, so a confused agent stops
+  exit test     - an objective signal for done (tests green), not self-report
+  progress      - the failure signature must change, or we're spinning
+  guardrail     - some edits are refused no matter what the model proposes
+  verification  - every patch is re-tested before it counts
+  revert        - a failed patch is undone, so attempts don't stack
 
 Runs against a scratch copy of buggy-api, so the planted bug survives.
-No credentials, no network, no model — the "proposals" are canned so the
+No credentials, no network, no model - the "proposals" are canned so the
 control flow is the only thing on screen.
 
     python3 examples/loop_engineering.py
@@ -94,7 +94,7 @@ def guardrail(path):
     """Refused regardless of what the model wants. Mirrors SKILL.md step 6:
     fix the code, not the test."""
     if "tests/" in path or Path(path).name.startswith("test_"):
-        return "test files are off-limits — a passing suite you edited proves nothing"
+        return "test files are off-limits - a passing suite you edited proves nothing"
     return None
 
 
@@ -122,7 +122,7 @@ def main():
     passed, signature, summary, names = run_tests(workdir)
     print(f"baseline           {summary}  [signature {signature}]")
     if passed:
-        print("\nnothing to do — the bug isn't planted.")
+        print("\nnothing to do - the bug isn't planted.")
         return 0
 
     seen = {signature}
@@ -141,12 +141,12 @@ def main():
         if refusal:
             # Costs an iteration on purpose: a refused proposal is still a turn
             # the agent spent, and pretending otherwise makes budgets meaningless.
-            print(f"  guardrail        REFUSED — {refusal}")
+            print(f"  guardrail        REFUSED - {refusal}")
             continue
 
         snapshot = (workdir / path).read_text()
         if not apply_patch(workdir, path, find, replace):
-            print("  apply            no-op — target text not found, skipping")
+            print("  apply            no-op - target text not found, skipping")
             continue
         print("  apply            patched")
 
@@ -165,10 +165,10 @@ def main():
         if signature in seen:
             # Same tests failing the same way. More iterations of the same
             # observation will produce the same proposal; escalate instead.
-            exit_reason = f"no progress — failure signature {signature} repeated, escalating to a human"
+            exit_reason = f"no progress - failure signature {signature} repeated, escalating to a human"
             break
         seen.add(signature)
-        print(f"  progress         failure changed, {len(names)} still failing — continuing")
+        print(f"  progress         failure changed, {len(names)} still failing - continuing")
 
     print(f"\nstopped: {exit_reason}")
     print(f"result:  {'GREEN' if passed else 'RED'}")

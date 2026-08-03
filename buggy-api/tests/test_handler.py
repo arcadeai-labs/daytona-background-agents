@@ -8,14 +8,14 @@ def test_page_one_starts_at_item_1():
 
 
 def test_page_two_starts_at_item_11():
-    """Page 2 should start where page 1 left off — no duplicates."""
+    """Page 2 should start where page 1 left off - no duplicates."""
     page1 = get_page(1)
     page2 = get_page(2)
     last_on_page1 = page1[-1].id
     first_on_page2 = page2[0].id
     assert first_on_page2 == last_on_page1 + 1, (
         f"Expected item {last_on_page1 + 1} on page 2, "
-        f"got item {first_on_page2} — duplicate from page 1"
+        f"got item {first_on_page2} - duplicate from page 1"
     )
 
 

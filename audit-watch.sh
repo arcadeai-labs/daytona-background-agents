@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Live governance ticker: streams every CATE decision as it happens.
-# Run in a second terminal next to run.sh — this is the "what is the
+# Run in a second terminal next to run.sh - this is the "what is the
 # agent doing, and what did policy say" pane.
 set -euo pipefail
 

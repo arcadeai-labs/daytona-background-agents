@@ -1,4 +1,4 @@
-# Video script — a background agent hits the wall (and that's the point)
+# Video script - a background agent hits the wall (and that's the point)
 
 **Format:** screen recording + voiceover, no face cam needed
 **Target length:** ~4-5 min
@@ -27,7 +27,7 @@ in a browser, ready to alt-tab. Silence notifications. Have the recorded backup 
 > from an email, fix the bug in a cloud sandbox, and open a PR, with nobody
 > watching. And the best moment is going to be when it gets told no."
 
-## BEAT 1 — Three files (~45s)
+## BEAT 1 - Three files (~45s)
 
 ```bash
 cat .claude/skills/support-triage/SKILL.md
@@ -54,7 +54,7 @@ cd buggy-api && python3 -m pytest -q; cd ..
 
 > "Two failing tests. A real pagination bug. That's our victim."
 
-## BEAT 2 — Fire the trigger (~40s)
+## BEAT 2 - Fire the trigger (~40s)
 
 ```bash
 ./run.sh
@@ -71,7 +71,7 @@ second window): subject `buggy api`, body describing the pagination bug.*
 
 > "Three lines. The skill does the rest."
 
-## BEAT 3 — The wall (money beat, ~60s)
+## BEAT 3 - The wall (money beat, ~60s)
 
 *The agent files the Linear ticket (alt-tab to Linear, two seconds), then asks
 Daytona for a sandbox and gets blocked. Zoom on:*
@@ -92,7 +92,7 @@ effect). The agent retries the same call and proceeds.*
 
 > "Approved. Same call, second attempt, sails through. No agent code changed."
 
-## BEAT 4 — Watch it work (~60s)
+## BEAT 4 - Watch it work (~60s)
 
 *Timelapse or narrate over the run. Call out as they scroll:*
 
@@ -100,7 +100,7 @@ effect). The agent retries the same call and proceeds.*
 - tests fail → fix → tests pass
 - branch `fix/buggy-api-<timestamp>` pushed → "it can't push to main; policy
   matches on the branch input itself, so don't-touch-main is enforced, not hoped"
-- *alt-tab to GitHub:* the PR — opened as a **draft** the agent couldn't opt out of
+- *alt-tab to GitHub:* the PR - opened as a **draft** the agent couldn't opt out of
 
 > "The agent never asked to open a draft. The gateway rewrote the PR inputs on
 > the way through. Your reviewers get a guaranteed signal about which PRs came
@@ -108,7 +108,7 @@ effect). The agent retries the same call and proceeds.*
 
 - Linear ticket flips to In Review; Slack summary lands.
 
-## BEAT 5 — The receipts (~45s)
+## BEAT 5 - The receipts (~45s)
 
 ```bash
 ./audit-check.sh logs

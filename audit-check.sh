@@ -28,9 +28,9 @@ case "${1:-logs}" in
   *)
     echo "Usage: ./audit-check.sh [logs|config|status|clear]"
     echo ""
-    echo "  logs    — View all webhook requests (default)"
-    echo "  config  — View current CATE rules"
-    echo "  status  — View server status"
-    echo "  clear   — Clear request logs"
+    echo "  logs    - View all webhook requests (default)"
+    echo "  config  - View current CATE rules"
+    echo "  status  - View server status"
+    echo "  clear   - Clear request logs"
     ;;
 esac
