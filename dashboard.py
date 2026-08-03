@@ -288,7 +288,7 @@ def ingest_runlog():
                 "endpoint": "/runlog",
                 "body": {
                     "execution_id": f"log-{_log_off[0]}-{i}",
-                    "tool": {"toolkit": "demo", "name": msg},
+                    "tool": {"toolkit": "agent", "name": msg},
                     "inputs": {},
                     "context": {"user_id": "run.sh"},
                 },
@@ -548,7 +548,7 @@ PAGE = r"""<!doctype html>
   </div>
   <div class="sub">
     <label><input type="checkbox" id="hidePoll" checked> hide inbox polling</label>
-    <label><input type="checkbox" id="demoOnly" checked> demo toolkits only</label>
+    <label><input type="checkbox" id="demoOnly" checked> agent toolkits only</label>
     <label><input type="checkbox" id="newest" checked> newest first</label>
     <span class="who" style="margin-left:auto">click any row for the full request</span>
   </div>
@@ -607,7 +607,7 @@ function render(){
   const newest = document.getElementById('newest').checked;
   const keep = e => {
     const kit = e.body?.tool?.toolkit || '', name = e.body?.tool?.name || '';
-    if (kit === 'You' || kit === 'demo') return true;   // operator + narrator rows always visible
+    if (kit === 'You' || kit === 'demo' || kit === 'agent') return true;   // operator + narrator rows always visible
     if (hidePoll && kit === 'Gmail' && POLLER_TOOLS.includes(name)) return false;
     if (demoOnly && !DEMO_KITS.includes(kit)) return false;
     return true;
