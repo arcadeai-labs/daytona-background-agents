@@ -380,9 +380,14 @@ PAGE = r"""<!doctype html>
   .chip.on{border-color:currentColor}
   .chip.all{color:var(--accent)} .chip.a b{color:var(--ok)}
   .chip.b b{color:var(--block)} .chip.s b{color:var(--stamp)}
-  .sub{margin-top:13px;display:flex;gap:9px;align-items:center;flex-wrap:wrap}
-  .sub label{color:var(--dim);font-size:13px;display:flex;gap:7px;align-items:center;cursor:pointer}
-  .cue{margin-top:14px;display:flex;gap:12px;align-items:center;padding:12px 16px;
+  .ctrl{margin-top:14px;background:linear-gradient(180deg,#221917 0%,#1b1414 100%);
+        border:1px solid var(--line);border-radius:16px;padding:14px 16px 12px;
+        box-shadow:0 18px 40px -24px rgba(0,0,0,.8)}
+  .feedbar{margin-top:12px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;
+        color:var(--dim);font-size:12px}
+  .feedbar label{display:flex;gap:6px;align-items:center;cursor:pointer}
+  .feedbar .links{margin-left:auto;display:flex;gap:12px;align-items:center}
+  .cue{margin:0 0 12px;display:flex;gap:12px;align-items:center;padding:12px 16px;
        border:1px solid #2b4a2e;border-radius:10px;background:#0f1a12;font-size:17px}
   .cue.wait{border-color:#2a3646;background:#0d141d;color:var(--dim)}
   .cue-k{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ok);
@@ -462,7 +467,11 @@ PAGE = r"""<!doctype html>
          font-size:13px;color:var(--dim)}
   .links a{color:var(--accent);text-decoration:none;border-bottom:1px solid transparent}
   .links a:hover{border-bottom-color:var(--accent)}
-  .ops{margin-top:14px;display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+  .ops{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+  .opgrp{display:flex;gap:8px;align-items:center}
+  .opgrp.dimgrp{padding-left:14px;border-left:1px solid var(--line)}
+  .dimgrp .op{font-size:12px;padding:8px 13px;opacity:.85}
+  .op.deck{margin-left:auto}
   .op{font:inherit;font-size:14px;font-weight:600;padding:9px 17px;border-radius:9px;
       cursor:pointer;border:1px solid;background:var(--panel);transition:.16s}
   .op:hover{transform:translateY(-1px)}
@@ -473,7 +482,7 @@ PAGE = r"""<!doctype html>
   .op.reset{color:var(--dim);border-color:var(--line)}
   .op.start{color:var(--fg);border-color:#5c4038;background:#301c24}
   .op.stop{color:#c98a86;border-color:#553431}
-  .state{margin-left:auto;display:flex;gap:16px;font-size:13px;color:var(--dim);
+  .state{margin-top:12px;display:flex;gap:8px;font-size:12px;color:var(--dim);
          align-items:center;flex-wrap:wrap}
   .pill{padding:4px 10px;border-radius:999px;border:1px solid var(--line)}
   .pill.armed{color:var(--ok);border-color:#1f5c2c}
@@ -557,31 +566,36 @@ PAGE = r"""<!doctype html>
       <button class="chip s" data-f="STAMPED"><b id="n-stamp">0</b>stamped</button>
     </div>
   </div>
-  <div class="sub">
+  <div class="ctrl">
+    <div class="cue" id="cue"><span class="cue-k">next step</span><span id="cue-t">…</span></div>
+    <div class="ops">
+      <span class="opgrp">
+        <button class="op go"      data-a="trigger">send trigger email</button>
+        <button class="op approve" data-a="approve">approve sandbox</button>
+        <button class="op restore" data-a="restore">re-block</button>
+      </span>
+      <span class="opgrp dimgrp">
+        <button class="op start"   data-a="start">start</button>
+        <button class="op stop"    data-a="stop">stop</button>
+        <button class="op reset"   data-a="reset">reset feed</button>
+      </span>
+      <button class="op deck" id="present">present ▸</button>
+    </div>
+    <div class="state" id="state"></div>
+    <div class="out" id="out"></div>
+  </div>
+  <div class="feedbar">
     <label><input type="checkbox" id="hidePoll" checked> hide inbox polling</label>
     <label><input type="checkbox" id="demoOnly" checked> agent toolkits only</label>
     <label><input type="checkbox" id="newest" checked> newest first</label>
-    <span class="who" style="margin-left:auto">click any row for the full request</span>
-  </div>
-  <div class="cue" id="cue"><span class="cue-k">next</span><span id="cue-t">…</span></div>
-  <div class="ops">
-    <button class="op start"   data-a="start">start</button>
-    <button class="op go"      data-a="trigger">send trigger email</button>
-    <button class="op approve" data-a="approve">approve sandbox</button>
-    <button class="op restore" data-a="restore">re-block</button>
-    <button class="op stop"    data-a="stop">stop</button>
-    <button class="op reset"   data-a="reset">reset feed</button>
-    <button class="op deck"    id="present">present ▸</button>
-    <div class="state" id="state"></div>
-  </div>
-  <div class="out" id="out"></div>
-  <div class="links">
+    <span class="links">
     <span>open in a tab:</span>
     <a href="https://github.com/arcadeai-labs/daytona-background-agents" target="_blank" rel="noopener">repo</a>
     <a href="https://github.com/arcadeai-labs/daytona-background-agents/tree/main/examples" target="_blank" rel="noopener">loop + graph examples</a>
     <a href="https://github.com/arcadeai-labs/daytona-background-agents/pulls" target="_blank" rel="noopener">pull requests</a>
     <a href="https://linear.app/arcadedev/team/DEMO/active" target="_blank" rel="noopener">Linear board</a>
     <a href="https://www.arcade.dev/blog/arcade-background-agents" target="_blank" rel="noopener">the why (blog)</a>
+    </span>
   </div>
 </header>
 <div id="deckwrap"><div id="deck"></div>
