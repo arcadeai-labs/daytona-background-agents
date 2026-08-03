@@ -82,8 +82,164 @@ def save_ledger():
         pass
 
 
-def run_action(name):
+RUN_LOG = HERE / ".dashboard-run.log"
+
+# The deck, folded in so the whole hour happens on one page. Copy is lifted from
+# the HyperFrames deck verbatim — that version renders blank past slide 1, and a
+# plain DOM deck can't fail that way on stage.
+#   kicker: small label above  ·  title: the line  ·  body: the paragraph
+#   items:  [label, text] pairs  ·  code: monospace block  ·  act: clock hint
+SLIDES = [
+    {"act": "holding", "kicker": "60-minute workshop · start now",
+     "title": "Background agents that won't get you fired",
+     "body": "Connect Arcade to the client you already have open, then ask it: "
+             "“summarize my last 3 commits.” Read-only tools, your own "
+             "OAuth grant. (Sharing your screen? Private commits show — ask for "
+             "this repo's open issues instead.)",
+     "code": "uv tool install arcade-mcp\n"
+             "arcade login\n"
+             "arcade connect claude-code \\\n"
+             "  --tool Github.WhoAmI \\\n"
+             "  --tool Github.GetUserRecentActivity \\\n"
+             "  --tool Github.GetRepository"},
+    {"act": "0:08", "kicker": "before the demo",
+     "title": "Now ask it what you'd actually use this for.",
+     "body": "Every gateway also mounts Arcade_ListApps, so your agent can see "
+             "every app Arcade reaches — Gmail, Linear, Slack, thirty more. "
+             "Ask it: “what could you do with Arcade in my workflow?” — then "
+             "hold that thought. The demo is what happens when nobody's "
+             "watching it do that."},
+    {"act": "0:10", "kicker": "the hook",
+     "title": "At 3 a.m., with nobody watching, a user is having issues.\n"
+              "What can your agent actually do to help them?",
+     "body": "most teams still can't answer that"},
+    {"act": "0:12", "kicker": "the thesis",
+     "title": "The interesting part isn't that an agent can fix the bug.",
+     "body": "It's everything that stops it from doing anything else."},
+    {"act": "0:13", "kicker": "three layers",
+     "title": "Three layers, and Arcade only owns one of them.",
+     "items": [["trigger", "Yours. Cron, a webhook, CI, an email poller. Arcade doesn't wake your agent up."],
+               ["procedure", "A skill — one markdown file. The runtime is a commodity; the procedure is the asset."],
+               ["governance", "Config, checked at the moment of every call. The agent cannot opt out."]]},
+    {"act": "0:15", "kicker": "the three moves",
+     "title": "Governance has three moves, and all three are config.",
+     "items": [["stop", "Sandbox creation blocks until a human approves."],
+               ["constrain", "Pushes to main are refused. No appeal, no override."],
+               ["stamp", "Every agent PR is rewritten to draft: true, asked for or not."]]},
+    {"act": "0:20", "kicker": "going live",
+     "title": "When the agent gets denied, watch what it does next.",
+     "code": "HITL_CHECKPOINT: Sandbox creation requires human approval.",
+     "body": "The deny is a message the agent can read. Nothing crashes. It says "
+             "what it was trying to do, why it stopped, and that it's waiting."},
+    {"act": "0:48", "kicker": "after the demo",
+     "title": "The demo isn't the PR. The demo is the audit trail.",
+     "body": "Every tool call, every input, every policy decision — attributable "
+             "to the human the agent acted for, not to a bot token that could "
+             "have been anyone."},
+    {"act": "0:48", "kicker": "the moment",
+     "title": "Policy is evaluated when the agent acts, not when you deployed it.",
+     "body": "Revoke a user, downgrade a role, change a rule — a running agent "
+             "feels it on its next call. Nothing to redeploy, nothing to "
+             "remember to restart."},
+    {"act": "extra", "kicker": "loop engineering",
+     "title": "A loop that can't stop isn't autonomy. It's a runaway.",
+     "items": [["budget", "A hard cap on iterations, so a confused agent stops instead of spinning."],
+               ["exit test", "Tests green — not the agent's own claim that it's finished."],
+               ["progress", "The failure has to change, or the next iteration proposes the same patch."],
+               ["guardrail", "It proposed weakening a test. The harness refused — not the prompt, the harness."]]},
+    {"act": "extra", "kicker": "graph engineering",
+     "title": "Loops made agents programmable. Graphs make agent orgs programmable.",
+     "items": [["concurrency", "Three reviewers dispatch at once. A loop reviews one at a time and pays triple."],
+               ["topology", "The human checkpoint is a node, so a block stalls its subtree — not the world."],
+               ["governed edges", "No handoff to push unless two of three reviews passed."]]},
+    {"act": "0:55", "kicker": "takeaways",
+     "title": "Three things to take home.",
+     "items": [["the trigger", "100 lines of bash. Replace it with whatever fires in your stack."],
+               ["the agent", "A markdown file. Version it, review it, ship it like code."],
+               ["the governance", "Config. No tool changes, no agent changes, no SDK in your way."]]},
+    {"act": "1:00", "kicker": "try it yourself",
+     "title": "Run the whole governance loop yourself. No account required.",
+     "code": "git clone github.com/arcadeai-labs/daytona-background-agents\n"
+             "python3 examples/loop_engineering.py --stuck\n"
+             "python3 examples/graph_engineering.py --skip-review",
+     "body": "Needs python3, go, git — nothing else."},
+    {"act": "Q&A", "kicker": "question",
+     "title": "What if it edits the test instead of the code?",
+     "items": [["the skill", "Says fix the code, not the test. Weakest layer — it's a request."],
+               ["the harness", "Refuses the edit outright. A suite you rewrote proves nothing."],
+               ["the log", "Records that it tried. You never rely on the self-report."]]},
+    {"act": "Q&A", "kicker": "question",
+     "title": "Why not just use a service account?",
+     "items": [["attribution", "One identity for every agent and user. The log names a robot."],
+               ["scope", "Its permissions are the union of everyone's. Nobody scopes it down."],
+               ["delegated", "Arcade holds the user's own grant. Revoke the human, the agent loses it."]]},
+]
+
+
+def start_demo():
+    """Launch run.sh detached, so it outlives this request and keeps polling.
+
+    Deliberately not in ACTIONS: run.sh is long-running, so it can't be handled
+    by the capture-output-and-wait path the other actions use."""
+    if is_running("run.sh"):
+        return True, "already running — check the pill: if it says READY, just press 'send trigger email'"
+    try:
+        with open(RUN_LOG, "wb") as log:
+            subprocess.Popen(
+                ["./run.sh"],
+                cwd=HERE,
+                stdout=log,
+                stderr=subprocess.STDOUT,
+                stdin=subprocess.DEVNULL,
+                start_new_session=True,
+            )
+        return True, f"run.sh started — arming takes ~30s. Log: {RUN_LOG.name}"
+    except OSError as e:
+        return False, str(e)
+
+
+def stop_demo():
+    """run.sh traps its own exit and deletes the CATE hook and plugin, so a plain
+    TERM is the correct way to stop it — never KILL, or the hooks leak."""
+    if not is_running("run.sh"):
+        return False, "run.sh is not running"
+    subprocess.run(["pkill", "-f", "run.sh"], capture_output=True)
+    return True, "sent TERM to run.sh — it cleans up its own hook and plugin"
+
+
+def is_running(pattern):
+    return (
+        subprocess.run(["pgrep", "-f", pattern], capture_output=True).returncode == 0
+    )
+
+
+def reset_feed(cate_port):
+    """Clean slate for the projector: wipe the ledger AND CATE's own log —
+    clearing only one means the poller re-ingests the other within a second.
+    Leaves /tmp/arcade-demo-processed.txt alone on purpose: deleting it while
+    run.sh polls would re-fire the agent on every old unread trigger email."""
+    try:
+        req = urllib.request.Request(
+            f"http://localhost:{cate_port}/_logs", method="DELETE"
+        )
+        urllib.request.urlopen(req, timeout=3).read()
+    except (urllib.error.URLError, OSError):
+        pass  # CATE down is fine — the ledger wipe still applies
+    with _lock:
+        _ledger.clear()
+        _seen.clear()
+        save_ledger()
+    return True, "feed reset — ledger and CATE log cleared, fresh wall"
+
+
+def run_action(name, cate_port=8888):
     """Run one of the fixed ACTIONS and return (ok, combined output)."""
+    if name == "start":
+        return start_demo()
+    if name == "stop":
+        return stop_demo()
+    if name == "reset":
+        return reset_feed(cate_port)
     argv = ACTIONS.get(name)
     if not argv:
         return False, f"unknown action: {name}"
@@ -130,6 +286,20 @@ def demo_state(cate_port):
     except (OSError, subprocess.TimeoutExpired):
         pass
 
+    # Boot progress: tail the run log so "start" isn't a leap of faith. The
+    # poller printing its waiting banner is the "you can send now" signal.
+    st["ready"] = False
+    st["boot"] = []
+    try:
+        lines = RUN_LOG.read_text().splitlines()
+        tail = [l.strip() for l in lines if l.strip()][-30:]
+        st["ready"] = st["run_sh"] and any(
+            "Waiting for" in l and "email" in l for l in tail
+        )
+        st["boot"] = [l for l in tail if l.startswith("[demo]")][-4:]
+    except OSError:
+        pass
+
     # The Arcade CLI token expiring mid-workshop is the classic way this dies.
     try:
         creds = (pathlib.Path.home() / ".arcade/credentials.yaml").read_text()
@@ -159,6 +329,10 @@ def poll(cate_port, stop):
             with _lock:
                 added = False
                 for e in entries:
+                    # /health pings carry a null body and would render as "?"
+                    # rows. They're liveness checks, not governance decisions.
+                    if e.get("endpoint") == "/health" or not (e.get("body") or {}).get("tool"):
+                        continue
                     k = _key(e)
                     if k not in _seen:
                         _seen.add(k)
@@ -213,6 +387,65 @@ PAGE = r"""<!doctype html>
   .chip.b b{color:var(--block)} .chip.s b{color:var(--stamp)}
   .sub{margin-top:13px;display:flex;gap:9px;align-items:center;flex-wrap:wrap}
   .sub label{color:var(--dim);font-size:13px;display:flex;gap:7px;align-items:center;cursor:pointer}
+  .cue{margin-top:14px;display:flex;gap:12px;align-items:center;padding:12px 16px;
+       border:1px solid #2b4a2e;border-radius:10px;background:#0f1a12;font-size:17px}
+  .cue.wait{border-color:#2a3646;background:#0d141d;color:var(--dim)}
+  .cue-k{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ok);
+         border:1px solid currentColor;border-radius:4px;padding:2px 7px}
+  .cue.wait .cue-k{color:var(--dim)}
+  .cue b{color:#7ee787}
+  .op.cued{border-color:var(--ok);color:#7ee787;
+           animation:cuepulse 1.6s infinite}
+  @keyframes cuepulse{0%,100%{box-shadow:0 0 0 0 rgba(63,185,80,.5)}
+                      60%{box-shadow:0 0 0 8px rgba(63,185,80,0)}}
+  #deckwrap{display:none;position:fixed;inset:0;z-index:50;background:
+      radial-gradient(1200px 600px at 10% -10%, #12213a 0%, transparent 60%),
+      radial-gradient(900px 500px at 110% 0%, #1c1430 0%, transparent 55%), #07090d;
+      padding:6vh 8vw;overflow:auto}
+  #deckwrap.on{display:block}
+  #deck{max-width:1200px;margin:0 auto}
+  .sact{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:26px}
+  .skick{font-size:15px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:14px}
+  #deck h2{font-size:52px;line-height:1.14;letter-spacing:-.025em;margin:0 0 26px;
+           font-weight:650;font-family:system-ui,-apple-system,"Inter",sans-serif}
+  .sbody{font-size:25px;line-height:1.5;color:#b9c8da;max-width:33ch+40ch;margin:0 0 24px;
+         font-family:system-ui,-apple-system,"Inter",sans-serif}
+  .scode{font-size:21px;padding:20px 24px;margin:0 0 24px;color:#7ee787;
+         background:#0d1117;border:1px solid var(--line);border-radius:10px;white-space:pre-wrap}
+  .sitems{display:grid;gap:18px;margin-top:8px}
+  .sitem{display:grid;grid-template-columns:190px 1fr;gap:22px;align-items:baseline;
+         padding-top:16px;border-top:1px solid var(--line)}
+  .sk{font-size:19px;color:var(--stamp);font-weight:600}
+  .sv{font-size:21px;line-height:1.45;color:#c6d3e2;
+      font-family:system-ui,-apple-system,"Inter",sans-serif}
+  .snum{margin-top:40px;color:var(--dim);font-size:14px}
+  .deckhint{position:fixed;bottom:18px;left:0;right:0;text-align:center;
+            color:var(--dim);font-size:13px;opacity:.7}
+  .op.deck{margin-left:8px}
+  .links{margin-top:12px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;
+         font-size:13px;color:var(--dim)}
+  .links a{color:var(--accent);text-decoration:none;border-bottom:1px solid transparent}
+  .links a:hover{border-bottom-color:var(--accent)}
+  .ops{margin-top:14px;display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+  .op{font:inherit;font-size:14px;font-weight:600;padding:9px 17px;border-radius:9px;
+      cursor:pointer;border:1px solid;background:var(--panel);transition:.16s}
+  .op:hover{transform:translateY(-1px)}
+  .op:disabled{opacity:.45;cursor:wait;transform:none}
+  .op.go{color:var(--accent);border-color:#1f4b7a}
+  .op.approve{color:var(--ok);border-color:#1f5c2c}
+  .op.restore{color:var(--block);border-color:#6e2b28}
+  .op.reset{color:var(--dim);border-color:var(--line)}
+  .op.start{color:var(--fg);border-color:#3a4d63;background:#13202f}
+  .op.stop{color:#c98a86;border-color:#553431}
+  .state{margin-left:auto;display:flex;gap:16px;font-size:13px;color:var(--dim);
+         align-items:center;flex-wrap:wrap}
+  .pill{padding:4px 10px;border-radius:999px;border:1px solid var(--line)}
+  .pill.armed{color:var(--ok);border-color:#1f5c2c}
+  .pill.dis{color:var(--block);border-color:#6e2b28}
+  .pill.warn{color:var(--stamp);border-color:#6b5518}
+  .out{margin-top:11px;font-size:13px;color:var(--dim);white-space:pre-wrap;
+       max-height:0;overflow:hidden;transition:max-height .25s}
+  .out.show{max-height:150px;overflow:auto}
   main{padding:0 0 60px}
   .row{display:grid;grid-template-columns:88px 128px 1fr 118px 22px;
        gap:15px;align-items:center;padding:13px 30px;
@@ -231,6 +464,8 @@ PAGE = r"""<!doctype html>
   .ALLOWED{color:var(--ok);background:#3fb95015}
   .BLOCKED{color:var(--block);background:#ff5f5622}
   .STAMPED{color:var(--stamp);background:#e3b34120}
+  .HUMAN{color:var(--accent);background:#58a6ff1f}
+  .row.is-HUMAN{border-left:3px solid var(--accent);padding-left:27px}
   .caret{color:var(--dim);font-size:12px;transition:transform .18s}
   .row.open .caret{transform:rotate(90deg)}
   .why{padding:0 30px 13px 30px;color:var(--dim);font-size:14px;
@@ -268,7 +503,29 @@ PAGE = r"""<!doctype html>
     <label><input type="checkbox" id="newest" checked> newest first</label>
     <span class="who" style="margin-left:auto">click any row for the full request</span>
   </div>
+  <div class="cue" id="cue"><span class="cue-k">next</span><span id="cue-t">…</span></div>
+  <div class="ops">
+    <button class="op start"   data-a="start">start</button>
+    <button class="op go"      data-a="trigger">send trigger email</button>
+    <button class="op approve" data-a="approve">approve sandbox</button>
+    <button class="op restore" data-a="restore">re-block (Act 4)</button>
+    <button class="op stop"    data-a="stop">stop</button>
+    <button class="op reset"   data-a="reset">reset feed</button>
+    <button class="op deck"    id="present">present ▸</button>
+    <div class="state" id="state"></div>
+  </div>
+  <div class="out" id="out"></div>
+  <div class="links">
+    <span>open in a tab:</span>
+    <a href="https://github.com/arcadeai-labs/daytona-background-agents" target="_blank" rel="noopener">repo</a>
+    <a href="https://github.com/arcadeai-labs/daytona-background-agents/tree/main/examples" target="_blank" rel="noopener">loop + graph examples</a>
+    <a href="https://github.com/arcadeai-labs/daytona-background-agents/pulls" target="_blank" rel="noopener">pull requests</a>
+    <a href="https://linear.app/arcadedev/team/DEMO/active" target="_blank" rel="noopener">Linear board</a>
+    <a href="https://www.arcade.dev/blog/arcade-background-agents" target="_blank" rel="noopener">the why (blog)</a>
+  </div>
 </header>
+<div id="deckwrap"><div id="deck"></div>
+  <div class="deckhint">← → or space to move · Esc back to the live feed</div></div>
 <main id="feed"><div class="empty">Waiting for the agent's first tool call…</div></main>
 <script>
 const DEMO_KITS = ['Daytona','Github','GitHub','Linear','Slack','Gmail'];
@@ -276,9 +533,12 @@ const DEMO_KITS = ['Daytona','Github','GitHub','Linear','Slack','Gmail'];
 // governed call. True, and useless on a projector — it buries everything else.
 const POLLER_TOOLS = ['SearchThreads','GetThread'];
 let events = [], filter = 'ALL';
+const openKeys = new Set();
+function ekey(e){ return [(e.timestamp||''),(e.body?.execution_id||''),(e.body?.tool?.name||'')].join('|'); }
 
 function classify(r){
   if(!r) return 'ALLOWED';
+  if(r.code === 'HUMAN') return 'HUMAN';
   if(r.code === 'CHECK_FAILED') return 'BLOCKED';
   if(r.override) return 'STAMPED';
   return 'ALLOWED';
@@ -291,6 +551,7 @@ function render(){
   const newest = document.getElementById('newest').checked;
   const keep = e => {
     const kit = e.body?.tool?.toolkit || '', name = e.body?.tool?.name || '';
+    if (kit === 'You') return true;   // operator clicks always visible
     if (hidePoll && kit === 'Gmail' && POLLER_TOOLS.includes(name)) return false;
     if (demoOnly && !DEMO_KITS.includes(kit)) return false;
     return true;
@@ -298,7 +559,7 @@ function render(){
   let list = events.filter(e =>
     keep(e) && (filter === 'ALL' || classify(e.response) === filter));
 
-  const counts = {ALLOWED:0, BLOCKED:0, STAMPED:0};
+  const counts = {ALLOWED:0, BLOCKED:0, STAMPED:0, HUMAN:0};
   events.filter(keep).forEach(e => counts[classify(e.response)]++);
   document.getElementById('n-all').textContent = counts.ALLOWED+counts.BLOCKED+counts.STAMPED;
   document.getElementById('n-ok').textContent = counts.ALLOWED;
@@ -316,7 +577,7 @@ function render(){
               : '';
     const ctx = e.body?.context || {};
     return `
-    <div class="row is-${st}" data-i="${i}">
+    <div class="row is-${st}" data-k="${esc(ekey(e))}">
       <div class="ts">${esc((e.timestamp||'').slice(11,19))}</div>
       <div class="kit">${esc(t.toolkit||'?')}</div>
       <div class="tool">${esc(t.name||'?')}</div>
@@ -324,7 +585,7 @@ function render(){
       <div class="caret">▸</div>
     </div>
     ${why ? `<div class="why ${st}">└─ ${esc(why)}</div>` : ''}
-    <div class="detail" data-d="${i}">
+    <div class="detail" data-k="${esc(ekey(e))}">
       <div class="grid">
         <div class="cell"><div class="k">acting as</div><div class="v">${esc(ctx.user_id||'—')}</div></div>
         <div class="cell"><div class="k">hook</div><div class="v">${esc(e.endpoint||'—')}</div></div>
@@ -339,10 +600,21 @@ function render(){
     </div>`;
   }).join('');
 
-  feed.querySelectorAll('.row').forEach(row => row.addEventListener('click', () => {
-    row.classList.toggle('open');
-    feed.querySelector(`.detail[data-d="${row.dataset.i}"]`)?.classList.toggle('open');
-  }));
+  // Re-apply anything the operator had expanded. The feed re-renders whenever a
+  // new event lands, and slamming a detail pane shut mid-sentence is the fastest
+  // way to lose your place in front of a room.
+  feed.querySelectorAll('.row').forEach(row => {
+    const k = row.dataset.k;
+    if (openKeys.has(k)) {
+      row.classList.add('open');
+      feed.querySelector(`.detail[data-k="${k}"]`)?.classList.add('open');
+    }
+    row.addEventListener('click', () => {
+      const on = row.classList.toggle('open');
+      on ? openKeys.add(k) : openKeys.delete(k);
+      feed.querySelector(`.detail[data-k="${k}"]`)?.classList.toggle('open', on);
+    });
+  });
 
   const last = [...events].reverse().find(e => e.body?.context?.user_id);
   if (last) document.getElementById('who').textContent = last.body.context.user_id;
@@ -360,13 +632,161 @@ async function tick(){
 }
 ['demoOnly','newest','hidePoll'].forEach(id =>
   document.getElementById(id).addEventListener('change', render));
+
+// ── stage controls ────────────────────────────────────────────────
+const out = document.getElementById('out');
+document.querySelectorAll('.op').forEach(btn => btn.addEventListener('click', async () => {
+  const all = [...document.querySelectorAll('.op')];
+  all.forEach(b => b.disabled = true);
+  out.textContent = '$ ' + btn.dataset.a + '…';
+  out.classList.add('show');
+  try{
+    const r = await fetch('/act/' + btn.dataset.a, {method:'POST'});
+    const j = await r.json();
+    out.textContent = (j.ok ? '' : '✗ ') + j.output;
+  }catch(e){ out.textContent = '✗ ' + e; }
+  all.forEach(b => b.disabled = false);
+  refreshState();
+}));
+
+async function refreshState(){
+  try{
+    const s = await (await fetch('/state')).json();
+    const bits = [];
+    bits.push(s.armed
+      ? '<span class="pill armed">policy armed</span>'
+      : '<span class="pill dis">policy DISARMED</span>');
+    // three states, not two: down / arming / READY — "ready" is the poller's
+    // own waiting banner, i.e. the moment "send trigger email" will land
+    bits.push(!s.run_sh
+      ? '<span class="pill dis">stopped — press start</span>'
+      : s.ready
+        ? '<span class="pill armed">READY — send the email</span>'
+        : '<span class="pill warn">arming… (~30s)</span>');
+    // while arming, stream the boot log into the output strip
+    if (s.run_sh && !s.ready && (s.boot||[]).length){
+      out.textContent = s.boot.join('\n');
+      out.classList.add('show');
+    }
+    if (s.token_min !== null && s.token_min !== undefined){
+      const cls = s.token_min < 0 ? 'dis' : (s.token_min < 45 ? 'warn' : 'armed');
+      const txt = s.token_min < 0 ? 'token EXPIRED' : 'token ' + s.token_min + 'm';
+      bits.push('<span class="pill '+cls+'">'+txt+'</span>');
+    }
+    for (const r of s.policy){
+      const on = r.action === 'block' ? 'dis' : (r.override ? 'warn' : '');
+      bits.push('<span class="pill '+on+'">'+r.tool+': '+r.action
+        + (r.override ? ' +draft' : '') + '</span>');
+    }
+    document.getElementById('state').innerHTML = bits.join('');
+  }catch(e){}
+}
+refreshState(); setInterval(refreshState, 4000);
 document.querySelectorAll('.chip').forEach(c => c.addEventListener('click', () => {
   document.querySelectorAll('.chip').forEach(x => x.classList.remove('on'));
   c.classList.add('on'); filter = c.dataset.f; render();
 }));
+
+// ── stage cue: what to press next, derived from live state ─────────
+function cueFor(state, ev){
+  const named = n => ev.filter(e => e.body?.tool?.name === n);
+  if (!state.run_sh)
+    return {t:'run.sh is not running. Press <b>start demo</b>, then wait ~30s for it to arm.', a:'start'};
+  if (!state.armed)
+    return {t:'Arming… policy not fully in place yet. Wait for all three rules.', a:null};
+  const sandbox = named('CreateSandbox');
+  const lastSandbox = sandbox[sandbox.length-1];
+  if (lastSandbox && classify(lastSandbox.response) === 'BLOCKED')
+    return {t:'The agent is blocked and waiting. Let the room read it, then press <b>approve sandbox</b>.', a:'approve'};
+  const stamped = ev.some(e => e.body?.tool?.name==='CreatePullRequest' && e.response?.override);
+  if (stamped)
+    return {t:'PR was stamped <b>draft: true</b>. For Act 4, press <b>re-block</b> to change policy live.', a:'restore'};
+  const started = named('CreateIssue').length || named('ListTeams').length;
+  if (!started)
+    return {t:'Armed and polling. Press <b>send trigger email</b> when you are ready.', a:'trigger'};
+  return {t:'Agent is working — narrate the feed. Nothing to press.', a:null};
+}
+function paintCue(state){
+  const c = cueFor(state, events);
+  const box = document.getElementById('cue');
+  document.getElementById('cue-t').innerHTML = c.t;
+  box.classList.toggle('wait', !c.a);
+  document.querySelectorAll('.op').forEach(b =>
+    b.classList.toggle('cued', !!c.a && b.dataset.a === c.a));
+}
+
+// ── the deck, on the same page ─────────────────────────────────────
+let slides = [], deckIdx = 0;
+fetch('/slides').then(r=>r.json()).then(d=>{
+  slides = d.slides || [];
+  // #present opens the deck; #present-6 opens it on slide 6
+  const m = location.hash.match(/^#present(?:-(\d+))?$/);
+  if (m){ if (m[1]) deckIdx = Math.min(slides.length-1, Math.max(0, +m[1]-1)); showDeck(true); }
+});
+function showDeck(on){
+  document.getElementById('deckwrap').classList.toggle('on', on);
+  if (on) paintSlide();
+}
+function paintSlide(){
+  const s = slides[deckIdx]; if (!s) return;
+  const items = (s.items||[]).map(([k,v]) =>
+    `<div class="sitem"><div class="sk">${esc(k)}</div><div class="sv">${esc(v)}</div></div>`).join('');
+  document.getElementById('deck').innerHTML = `
+    <div class="sact">${esc(s.act||'')}</div>
+    ${s.kicker?`<div class="skick">${esc(s.kicker)}</div>`:''}
+    <h2>${esc(s.title||'').replace(/\n/g,'<br>')}</h2>
+    ${s.code?`<pre class="scode">${esc(s.code)}</pre>`:''}
+    ${s.body?`<p class="sbody">${esc(s.body)}</p>`:''}
+    ${items?`<div class="sitems">${items}</div>`:''}
+    <div class="snum">${deckIdx+1} / ${slides.length}</div>`;
+}
+function move(d){ deckIdx = Math.max(0, Math.min(slides.length-1, deckIdx+d)); paintSlide(); }
+document.getElementById('present').addEventListener('click', () => showDeck(true));
+document.addEventListener('keydown', e => {
+  const on = document.getElementById('deckwrap').classList.contains('on');
+  if (e.key === 'Escape' && on) return showDeck(false);
+  if (!on) return;
+  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); move(1); }
+  if (e.key === 'ArrowLeft') move(-1);
+});
+
 tick(); setInterval(tick, 900);
 </script></body></html>
 """
+
+
+OPERATOR_LABELS = {
+    "trigger": "sent the trigger email",
+    "approve": "approved the sandbox",
+    "restore": "re-blocked sandbox creation",
+    "start": "started the demo",
+    "stop": "stopped the demo",
+}
+
+
+def log_operator(name):
+    """The human's click is part of the story — put it on the timeline where
+    it happened, between the deny and the retry."""
+    import datetime
+    label = OPERATOR_LABELS.get(name)
+    if not label:
+        return
+    e = {
+        "timestamp": datetime.datetime.now().astimezone().isoformat(),
+        "endpoint": "/operator",
+        "body": {
+            "execution_id": f"op-{time.time():.0f}",
+            "tool": {"toolkit": "You", "name": label},
+            "inputs": {},
+            "context": {"user_id": "the human at the keyboard"},
+        },
+        "response": {"code": "HUMAN"},
+        "rule_match": "human-in-the-loop",
+    }
+    with _lock:
+        _seen.add(_key(e))
+        _ledger.append(e)
+        save_ledger()
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -386,8 +806,35 @@ class Handler(BaseHTTPRequestHandler):
             with _lock:
                 body = json.dumps({"count": len(_ledger), "events": _ledger}).encode()
             self._send(body, "application/json")
+        elif self.path == "/slides":
+            self._send(json.dumps({"slides": SLIDES}).encode(), "application/json")
+        elif self.path == "/state":
+            self._send(json.dumps(demo_state(self.cate_port)).encode(), "application/json")
         else:
             self.send_error(404)
+
+    def do_POST(self):
+        if self.path.startswith("/act/") and self.path[len("/act/"):] in ("start", "stop", "reset"):
+            name = self.path[len("/act/"):]
+            ok, output = run_action(name, self.cate_port)
+            if ok:
+                log_operator(name)
+            self._send(json.dumps({"ok": ok, "output": output}).encode(), "application/json")
+            return
+        if not self.path.startswith("/act/"):
+            self.send_error(404)
+            return
+        name = self.path[len("/act/"):]
+        if name not in ACTIONS:
+            self._send(
+                json.dumps({"ok": False, "output": f"unknown action: {name}"}).encode(),
+                "application/json",
+            )
+            return
+        ok, output = run_action(name)
+        if ok:
+            log_operator(name)
+        self._send(json.dumps({"ok": ok, "output": output}).encode(), "application/json")
 
     def log_message(self, *a):
         pass  # don't scribble over the demo terminal
@@ -410,8 +857,11 @@ if __name__ == "__main__":
 
     print(f"Governance dashboard:  http://localhost:{args.port}")
     print(f"Polling CATE on :{args.cate_port} · ledger has {len(_ledger)} events")
+    print("Stage controls enabled (trigger / approve / re-block).")
     print("Ctrl+C to stop.")
     try:
-        ThreadingHTTPServer(("", args.port), Handler).serve_forever()
+        # 127.0.0.1, never 0.0.0.0 — this page can run commands, and conference
+        # wifi is not a place to expose that.
+        ThreadingHTTPServer(("127.0.0.1", args.port), Handler).serve_forever()
     except KeyboardInterrupt:
         stop.set()
