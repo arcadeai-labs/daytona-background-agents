@@ -9,5 +9,5 @@ def get_page(page: int, limit: int = 10) -> list[Item]:
     if page < 1:
         return []
     # Pages are 1-indexed: page 1 -> offset 0, page 2 -> offset limit, etc.
-    offset = page * limit
+    offset = (page - 1) * limit
     return ITEMS[offset : offset + limit]
