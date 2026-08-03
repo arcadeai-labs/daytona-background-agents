@@ -883,8 +883,9 @@ document.addEventListener('keydown', e => {
   const on = document.getElementById('deckwrap').classList.contains('on');
   if (e.key === 'Escape' && on) return showDeck(false);
   if (!on) return;
-  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); move(1); }
-  if (e.key === 'ArrowLeft') move(-1);
+  // presentation clickers send PageDown/PageUp - without these the page scrolls
+  if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); move(1); }
+  if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); move(-1); }
 });
 
 tick(); setInterval(tick, 900);
