@@ -288,7 +288,7 @@ def ingest_runlog():
                 "endpoint": "/runlog",
                 "body": {
                     "execution_id": f"log-{_log_off[0]}-{i}",
-                    "tool": {"toolkit": "agent", "name": msg},
+                    "tool": {"toolkit": "ace", "name": msg},
                     "inputs": {},
                     "context": {"user_id": "run.sh"},
                 },
@@ -537,7 +537,7 @@ PAGE = r"""<!doctype html>
 </style></head><body>
 <header>
   <div class="top">
-    <h1><span class="dot" id="dot"></span>Agent governance</h1>
+    <h1><span class="dot" id="dot"></span>Ace · governed agent</h1>
     <div class="who">acting as <b id="who">-</b></div>
     <div class="counts">
       <button class="chip all on" data-f="ALL"><b id="n-all">0</b>calls</button>
@@ -607,7 +607,7 @@ function render(){
   const newest = document.getElementById('newest').checked;
   const keep = e => {
     const kit = e.body?.tool?.toolkit || '', name = e.body?.tool?.name || '';
-    if (kit === 'You' || kit === 'demo' || kit === 'agent') return true;   // operator + narrator rows always visible
+    if (kit === 'You' || kit === 'demo' || kit === 'agent' || kit === 'ace') return true;   // operator + narrator rows always visible
     if (hidePoll && kit === 'Gmail' && POLLER_TOOLS.includes(name)) return false;
     if (demoOnly && !DEMO_KITS.includes(kit)) return false;
     return true;
