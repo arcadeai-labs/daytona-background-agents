@@ -122,8 +122,12 @@ def start_demo():
         return True, "already running - check the pill: if it says READY, just press 'send trigger email'"
     try:
         with open(RUN_LOG, "wb") as log:
+            # Supervised: run.sh has died intermittently all afternoon (network
+            # hiccups, signal weirdness). On stage a death must be a 30s blip,
+            # not a dead demo. The stop button kills the whole session group.
             _run_proc[0] = subprocess.Popen(
-                ["./run.sh"],
+                ["/bin/bash", "-c",
+                 "while :; do ./run.sh; echo '[demo] supervisor: run.sh exited, respawning in 5s...'; sleep 5; done"],
                 cwd=HERE,
                 stdout=log,
                 stderr=subprocess.STDOUT,
@@ -140,8 +144,15 @@ def stop_demo():
     TERM is the correct way to stop it - never KILL, or the hooks leak."""
     if not is_running("run.sh"):
         return False, "run.sh is not running"
-    subprocess.run(["pkill", "-f", "run.sh"], capture_output=True)
-    return True, "sent TERM to run.sh - it cleans up its own hook and plugin"
+    # kill the supervisor's whole session group, else it respawns what we stop
+    if _run_proc[0] is not None and _run_proc[0].poll() is None:
+        import os, signal
+        try:
+            os.killpg(os.getpgid(_run_proc[0].pid), signal.SIGTERM)
+        except (ProcessLookupError, PermissionError):
+            pass
+    subprocess.run(["pkill", "-f", r"bash \./run\.sh"], capture_output=True)
+    return True, "stopped run.sh and its supervisor"
 
 
 def is_running(pattern):
@@ -740,16 +751,21 @@ async function refreshState(){
   try{
     const s = await (await fetch('/state')).json();
     const bits = [];
+    // phase first: the same booleans mean different things depending on
+    // where the run is, and cueFor already knows where the run is.
+    const c = cueFor(s, events);
+    const hitlOpen = !s.armed && c.a !== 'trigger' && s.run_sh;
+    if (!s.run_sh)              bits.push('<span class="pill dis">stopped - press start</span>');
+    else if (!s.ready)          bits.push('<span class="pill warn">arming… (~30s)</span>');
+    else if (c.a === 'trigger') bits.push('<span class="pill armed">READY - send the email</span>');
+    else if (c.a === 'approve') bits.push('<span class="pill dis">agent BLOCKED - your move</span>');
+    else if (c.a === 'restore') bits.push('<span class="pill warn">PR stamped - re-block when done</span>');
+    else                        bits.push('<span class="pill warn">agent working…</span>');
     bits.push(s.armed
       ? '<span class="pill armed">policy armed</span>'
-      : '<span class="pill dis">policy DISARMED</span>');
-    // three states, not two: down / arming / READY - "ready" is the poller's
-    // own waiting banner, i.e. the moment "send trigger email" will land
-    bits.push(!s.run_sh
-      ? '<span class="pill dis">stopped - press start</span>'
-      : s.ready
-        ? '<span class="pill armed">READY - send the email</span>'
-        : '<span class="pill warn">arming… (~30s)</span>');
+      : hitlOpen
+        ? '<span class="pill warn">HITL window open - auto-restores</span>'
+        : '<span class="pill dis">policy DISARMED - press re-block</span>');
     // while arming, stream the boot log into the output strip
     if (s.run_sh && !s.ready && (s.boot||[]).length){
       out.textContent = s.boot.join('\n');
@@ -761,7 +777,9 @@ async function refreshState(){
       bits.push('<span class="pill '+cls+'">'+txt+'</span>');
     }
     for (const r of s.policy){
-      const on = r.action === 'block' ? 'dis' : (r.override ? 'warn' : '');
+      let on = r.action === 'block' ? 'dis' : (r.override ? 'warn' : '');
+      if (r.tool === 'CreateSandbox' && r.action !== 'block')
+        on = hitlOpen ? 'warn' : 'dis';
       bits.push('<span class="pill '+on+'">'+r.tool+': '+r.action
         + (r.override ? ' +draft' : '') + '</span>');
     }
