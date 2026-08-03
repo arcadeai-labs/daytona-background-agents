@@ -458,12 +458,18 @@ PAGE = r"""<!doctype html>
         letter-spacing:.01em;margin-bottom:10px;text-transform:lowercase}
   .sv{font-size:clamp(15px,1.5vw,22px);line-height:1.45;color:#cfc1ba;
         font-family:system-ui,-apple-system,"Inter",sans-serif}
-  .qrrow{display:flex;gap:28px;margin:1vh 0 2vh;flex-wrap:wrap}
+  .qrrow{display:flex;gap:28px;margin:2vh 0;flex-wrap:wrap;justify-content:center}
   .qrcard{background:#211815;border:1px solid #3b2b28;border-radius:18px;padding:26px;
       display:flex;flex-direction:column;gap:16px;align-items:center}
   .qrcard img{width:min(26vh,300px);height:auto;display:block}
   .qrl{font-size:clamp(16px,1.6vw,24px);font-weight:700;color:var(--fg);text-align:center;line-height:1.4}
   .qrl span{font-size:.62em;font-weight:500;color:var(--dim)}
+  .t-center{text-align:center}
+  .t-center .stopline{justify-content:center}
+  .t-center .sact{margin-left:0}
+  .t-center .sbody{margin:0 auto 2vh;max-width:44ch}
+  .t-center .sfoot{justify-content:center}
+  .t-center .snum{margin-left:18px}
   .sfoot{display:flex;align-items:center;gap:18px;margin-top:5vh}
   .dots{display:flex;gap:7px}
   .dot2{width:7px;height:7px;border-radius:50%;background:#3d2c29;cursor:pointer;
@@ -837,12 +843,13 @@ function paintSlide(){
   const s = slides[deckIdx]; if (!s) return;
   const ACC = ['#fda054','#fc4d91','#a10afd','#ffad09'];
   const type = (s.items&&s.items.length) ? 't-cards' : (s.code ? 't-code' : 't-statement');
+  const centered = (s.html && !s.items && !s.code) ? ' t-center' : '';
   const items = (s.items||[]).map(([k,v],i) =>
     `<div class="sitem" style="--ac:${ACC[i%4]}"><div class="sk">${esc(k)}</div><div class="sv">${esc(v)}</div></div>`).join('');
   const dots = slides.map((_,i) =>
     `<span class="dot2 ${i===deckIdx?'here':''}" data-i="${i}"></span>`).join('');
   const deck = document.getElementById('deck');
-  deck.className = type;
+  deck.className = type + centered;
   deck.innerHTML = `
     <div class="stopline">
       ${s.kicker?`<div class="skick">${esc(s.kicker)}</div>`:''}
