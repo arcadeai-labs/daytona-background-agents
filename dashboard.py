@@ -623,7 +623,7 @@ PAGE = r"""<!doctype html>
   </div>
 </header>
 <div id="deckwrap"><div id="deck"></div>
-  <div class="deckhint">← → or space to move · Esc back to the live feed</div></div>
+  </div>
 <div class="cols2">
 <main id="feed"><div class="empty">Waiting for the agent's first tool call…</div></main>
 <aside id="oplog">
@@ -872,8 +872,7 @@ function paintSlide(){
     ${s.body?`<p class="sbody">${esc(s.body)}</p>`:''}
     ${items?`<div class="sitems">${items}</div>`:''}
     ${s.html||''}
-    <div class="sfoot"><div class="dots">${dots}</div>
-      <div class="snum">${deckIdx+1} / ${slides.length}</div></div>`;
+`;
   deck.style.animation = 'none'; void deck.offsetWidth; deck.style.animation = '';
   deck.querySelectorAll('.dot2').forEach(d => d.addEventListener('click', ev => {
     ev.stopPropagation(); deckIdx = +d.dataset.i; paintSlide();
