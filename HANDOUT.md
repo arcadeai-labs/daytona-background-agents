@@ -63,7 +63,8 @@ can't reach them.
 
 ## 4. Run the governance loop yourself - no accounts
 
-Needs `git`, `python3`, `go`. Nothing else.
+Needs `git`, `python3`, and a recent `go` (1.25+; `brew install go`).
+Nothing else.
 
 ```bash
 git clone https://github.com/arcadeai-labs/daytona-background-agents
@@ -101,7 +102,8 @@ The skill degrades on purpose: GitHub is the only hard requirement. No Linear
 fixes the file through the GitHub API and says plainly that a human must run
 the tests. No Slack -> skipped and noted. No Gmail needed at all.
 
-Order matters, and there's nothing to edit:
+You need Claude Code installed and signed in (it's the runtime, and it's
+paid). Order matters, and there's nothing to edit:
 
 ```bash
 # 1. Fork this repo on GitHub (one click) - the agent pushes a branch and
@@ -109,11 +111,22 @@ Order matters, and there's nothing to edit:
 # 2. Clone (your fork or this one - the clone is just the launcher).
 git clone https://github.com/YOUR-USERNAME/daytona-background-agents
 cd daytona-background-agents
-# 3. Connect (same three commands from section 1), then fire:
+# 3. Connect with the WRITE tools too - the three read-only tools from the
+#    cold open can look but not fix:
+arcade connect claude-code \
+  --tool Github.WhoAmI --tool Github.GetRepository \
+  --tool Github.GetFileContents --tool Github.CreateBranch \
+  --tool Github.CreateFile --tool Github.UpdateFileLines \
+  --tool Github.CreatePullRequest
+# 4. Fire:
 DEMO_REPO_URL=https://github.com/YOUR-USERNAME/daytona-background-agents ./triage.sh
 ```
 
-The output is still the thing that matters: a draft PR it can't promote.
+One honest difference from what you watched on stage: your project has no
+CATE hook, so nothing rewrites your agent's PR to draft. It will arrive as a
+normal PR. That is the lesson, not a bug - the draft stamp came from the
+gateway's policy, not from the model being polite. Wiring your own hook is
+Track C.
 
 ## 6. Run the full loop (an afternoon, at home)
 

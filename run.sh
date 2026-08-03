@@ -324,9 +324,15 @@ else
   log "Starting ngrok tunnel..."
   ngrok http ${CATE_PORT} --authtoken "${NGROK_AUTHTOKEN}" --log=stderr --log-level=warn >/dev/null 2>&1 &
   NGROK_PID=$!
-  sleep 2
-  NGROK_URL=$(curl -sf http://localhost:4040/api/tunnels | jq -r '.tunnels[] | select(.proto=="https") | .public_url' 2>/dev/null || true)
-  [ -z "$NGROK_URL" ] && fail "Could not get ngrok URL"
+  # ngrok can take several seconds on hotel/conference wifi; a single 2s check
+  # was killing the whole demo on a coin flip. Poll up to 20s.
+  NGROK_URL=""
+  for _ in $(seq 1 20); do
+    sleep 1
+    NGROK_URL=$(curl -sf http://localhost:4040/api/tunnels | jq -r '.tunnels[] | select(.proto=="https") | .public_url' 2>/dev/null || true)
+    [ -n "$NGROK_URL" ] && break
+  done
+  [ -z "$NGROK_URL" ] && fail "Could not get ngrok URL after 20s (is another ngrok session using this account?)"
   log "Tunnel: ${NGROK_URL}"
 fi
 
