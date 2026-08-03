@@ -90,12 +90,11 @@ RUN_LOG = HERE / ".dashboard-run.log"
 #   kicker: small label above  ·  title: the line  ·  body: the paragraph
 #   items:  [label, text] pairs  ·  code: monospace block  ·  act: clock hint
 SLIDES = [
-    {"act": "holding", "kicker": "60-minute workshop · start now",
+    {"act": "holding", "kicker": "start now",
+     "cue": "you, before doors: press start \u00b7 wait for the green READY pill \u00b7 reset feed",
      "title": "Background agents that won't get you fired",
-     "body": "Connect Arcade to the client you already have open, then ask it: "
-             "“summarize my last 3 commits.” Read-only tools, your own "
-             "OAuth grant. (Sharing your screen? Private commits show — ask for "
-             "this repo's open issues instead.)",
+     "body": "Connect, then ask: \u201csummarize my last 3 commits.\u201d "
+             "(Sharing your screen? Ask for this repo's open issues instead.)",
      "code": "uv tool install arcade-mcp\n"
              "arcade login\n"
              "arcade connect claude-code \\\n"
@@ -103,76 +102,70 @@ SLIDES = [
              "  --tool Github.GetUserRecentActivity \\\n"
              "  --tool Github.GetRepository"},
     {"act": "0:08", "kicker": "before the demo",
-     "title": "Now ask it what you'd actually use this for.",
-     "body": "Every gateway also mounts Arcade_ListApps, so your agent can see "
-             "every app Arcade reaches — Gmail, Linear, Slack, thirty more. "
-             "Ask it: “what could you do with Arcade in my workflow?” — then "
-             "hold that thought. The demo is what happens when nobody's "
-             "watching it do that."},
-    {"act": "0:10", "kicker": "the hook",
-     "title": "At 3 a.m., with nobody watching, a user is having issues.\n"
-              "What can your agent actually do to help them?",
-     "body": "most teams still can't answer that"},
-    {"act": "0:12", "kicker": "the thesis",
-     "title": "The interesting part isn't that an agent can fix the bug.",
-     "body": "It's everything that stops it from doing anything else."},
-    {"act": "0:13", "kicker": "three layers",
-     "title": "Three layers, and Arcade only owns one of them.",
-     "items": [["trigger", "Yours. Cron, a webhook, CI, an email poller. Arcade doesn't wake your agent up."],
-               ["procedure", "A skill — one markdown file. The runtime is a commodity; the procedure is the asset."],
-               ["governance", "Config, checked at the moment of every call. The agent cannot opt out."]]},
-    {"act": "0:15", "kicker": "the three moves",
-     "title": "Governance has three moves, and all three are config.",
-     "items": [["stop", "Sandbox creation blocks until a human approves."],
-               ["constrain", "Pushes to main are refused. No appeal, no override."],
-               ["stamp", "Every agent PR is rewritten to draft: true, asked for or not."]]},
+     "title": "Ask it: \u201cwhat would you use this for?\u201d",
+     "body": "Hold that thought."},
+    {"act": "0:10", "kicker": "the cold open",
+     "title": "Would you let Claude loose in this casino\nwith your Q3 budget?",
+     "body": "Of course not. And not because Claude is dumb."},
+    {"act": "0:12", "kicker": "the example",
+     "title": "The slot machine is a background agent.",
+     "items": [["unattended", "Runs all night. Nobody watching."],
+               ["bounded", "Only plays games the floor installed."],
+               ["HITL", "At $1,200 it locks and pages a human."],
+               ["audited", "Every spin on camera."]]},
+    {"act": "0:14", "kicker": "our version",
+     "title": "It's 3 a.m. A user is stuck.\nWhat can your agent do to help?",
+     "body": "Same floor. Different building."},
+    {"act": "0:15", "kicker": "three layers",
+     "title": "Arcade only owns one layer.",
+     "items": [["trigger", "Yours \u2014 cron, webhook, email."],
+               ["procedure", "One markdown file."],
+               ["governance", "Config the agent can't opt out of."]]},
+    {"act": "0:16", "kicker": "the three moves",
+     "title": "Stop. Constrain. Stamp.",
+     "items": [["stop", "Sandbox blocks until a human \u2014 the pit boss."],
+               ["constrain", "No pushes to main \u2014 the table limit."],
+               ["stamp", "Every PR forced to draft \u2014 chips, not cash."]]},
     {"act": "0:20", "kicker": "going live",
-     "title": "When the agent gets denied, watch what it does next.",
-     "code": "HITL_CHECKPOINT: Sandbox creation requires human approval.",
-     "body": "The deny is a message the agent can read. Nothing crashes. It says "
-             "what it was trying to do, why it stopped, and that it's waiting."},
-    {"act": "0:48", "kicker": "after the demo",
-     "title": "The demo isn't the PR. The demo is the audit trail.",
-     "body": "Every tool call, every input, every policy decision — attributable "
-             "to the human the agent acted for, not to a bot token that could "
-             "have been anyone."},
-    {"act": "0:48", "kicker": "the moment",
-     "title": "Policy is evaluated when the agent acts, not when you deployed it.",
-     "body": "Revoke a user, downgrade a role, change a rule — a running agent "
-             "feels it on its next call. Nothing to redeploy, nothing to "
-             "remember to restart."},
+     "cue": "Esc \u2192 live feed \u00b7 press SEND TRIGGER EMAIL \u00b7 when the red row lands, talk, then press APPROVE SANDBOX",
+     "title": "Watch what it does when it's told no.",
+     "code": "HITL_CHECKPOINT: Sandbox creation requires human approval."},
+    {"act": "0:48", "kicker": "the receipts",
+     "cue": "Esc \u2192 feed \u00b7 click the STAMPED row: draft:true it never asked for \u00b7 click a BLOCKED row: rule_match",
+     "title": "The demo isn't the PR.\nIt's the audit trail.",
+     "body": "The eye in the sky, for agents."},
+    {"act": "0:50", "kicker": "the moment",
+     "cue": "Esc \u2192 feed \u00b7 press RE-BLOCK (Act 4) \u00b7 watch the CreateSandbox pill flip to block, live",
+     "title": "Policy is checked when the agent acts,\nnot when you deployed it."},
     {"act": "extra", "kicker": "loop engineering",
-     "title": "A loop that can't stop isn't autonomy. It's a runaway.",
-     "items": [["budget", "A hard cap on iterations, so a confused agent stops instead of spinning."],
-               ["exit test", "Tests green — not the agent's own claim that it's finished."],
-               ["progress", "The failure has to change, or the next iteration proposes the same patch."],
-               ["guardrail", "It proposed weakening a test. The harness refused — not the prompt, the harness."]]},
+     "title": "A loop that can't stop is a runaway.",
+     "items": [["budget", "Hard cap on iterations."],
+               ["exit test", "Tests green, not self-report."],
+               ["guardrail", "It tried to weaken a test. Refused."]]},
     {"act": "extra", "kicker": "graph engineering",
-     "title": "Loops made agents programmable. Graphs make agent orgs programmable.",
-     "items": [["concurrency", "Three reviewers dispatch at once. A loop reviews one at a time and pays triple."],
-               ["topology", "The human checkpoint is a node, so a block stalls its subtree — not the world."],
-               ["governed edges", "No handoff to push unless two of three reviews passed."]]},
+     "title": "Graphs make agent orgs programmable.",
+     "items": [["concurrency", "Three reviewers at once."],
+               ["topology", "A block stalls a subtree, not the world."],
+               ["edges", "No push unless 2 of 3 reviews pass."]]},
     {"act": "0:55", "kicker": "takeaways",
-     "title": "Three things to take home.",
-     "items": [["the trigger", "100 lines of bash. Replace it with whatever fires in your stack."],
-               ["the agent", "A markdown file. Version it, review it, ship it like code."],
-               ["the governance", "Config. No tool changes, no agent changes, no SDK in your way."]]},
-    {"act": "1:00", "kicker": "try it yourself",
-     "title": "Run the whole governance loop yourself. No account required.",
+     "title": "Take three things home.",
+     "items": [["trigger", "100 lines of bash."],
+               ["agent", "A markdown file."],
+               ["governance", "Config."]]},
+    {"act": "1:00", "kicker": "your turn",
+     "title": "Run the governance loop yourself.\nNo account required.",
      "code": "git clone github.com/arcadeai-labs/daytona-background-agents\n"
-             "python3 examples/loop_engineering.py --stuck\n"
-             "python3 examples/graph_engineering.py --skip-review",
-     "body": "Needs python3, go, git — nothing else."},
+             "open HANDOUT.md   # every command from this hour"},
     {"act": "Q&A", "kicker": "question",
      "title": "What if it edits the test instead of the code?",
-     "items": [["the skill", "Says fix the code, not the test. Weakest layer — it's a request."],
-               ["the harness", "Refuses the edit outright. A suite you rewrote proves nothing."],
-               ["the log", "Records that it tried. You never rely on the self-report."]]},
+     "items": [["skill", "Forbids it."],
+               ["review", "The draft PR catches it."],
+               ["audit", "The log proves it."]]},
     {"act": "Q&A", "kicker": "question",
-     "title": "Why not just use a service account?",
-     "items": [["attribution", "One identity for every agent and user. The log names a robot."],
-               ["scope", "Its permissions are the union of everyone's. Nobody scopes it down."],
-               ["delegated", "Arcade holds the user's own grant. Revoke the human, the agent loses it."]]},
+     "title": "Why not a service account?",
+     "items": [["attribution", "The log would name a robot."],
+               ["scope", "Union of everyone's permissions."],
+               ["delegated", "Revoke the human, the agent loses it."]]},
 ]
 
 
@@ -465,6 +458,8 @@ PAGE = r"""<!doctype html>
   .BLOCKED{color:var(--block);background:#ff5f5622}
   .STAMPED{color:var(--stamp);background:#e3b34120}
   .HUMAN{color:var(--accent);background:#58a6ff1f}
+  .scue{margin:1.5vh 0;padding:1.4vh 1.4vw;border:1px dashed var(--accent);border-radius:10px;
+        color:var(--accent);font-size:clamp(13px,1.3vw,20px);letter-spacing:.02em}
   .row.is-HUMAN{border-left:3px solid var(--accent);padding-left:27px}
   .caret{color:var(--dim);font-size:12px;transition:transform .18s}
   .row.open .caret{transform:rotate(90deg)}
@@ -735,6 +730,7 @@ function paintSlide(){
     <div class="sact">${esc(s.act||'')}</div>
     ${s.kicker?`<div class="skick">${esc(s.kicker)}</div>`:''}
     <h2>${esc(s.title||'').replace(/\n/g,'<br>')}</h2>
+    ${s.cue?`<div class="scue">\u{1F3AC} ${esc(s.cue)}</div>`:''}
     ${s.code?`<pre class="scode">${esc(s.code)}</pre>`:''}
     ${s.body?`<p class="sbody">${esc(s.body)}</p>`:''}
     ${items?`<div class="sitems">${items}</div>`:''}
