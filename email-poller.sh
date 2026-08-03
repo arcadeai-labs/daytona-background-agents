@@ -20,7 +20,7 @@ while true; do
     -d "{
       \"tool_name\": \"Gmail.search_threads\",
       \"user_id\": \"${USER_ID}\",
-      \"input\": {\"subject\": \"buggy api\", \"label_ids\": [\"UNREAD\"], \"max_results\": 1}
+      \"input\": {\"subject\": [\"buggy api\"], \"label_ids\": [\"UNREAD\"], \"max_results\": 1}
     }" 2>/dev/null || echo '{}')
 
   thread_id=$(echo "$result" | jq -r '.output.value.threads[0].id // empty')

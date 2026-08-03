@@ -2,7 +2,7 @@
 
 *Draft — technical companion to [How Does Arcade.dev Work With My Background Agents?](https://www.arcade.dev/blog/arcade-background-agents). Target: AI developers evaluating this for production. Every code block below is from a working repo: [arcadeai-labs/daytona-background-agents](https://github.com/arcadeai-labs/daytona-background-agents).*
 
-Our last post on background agents made four claims: authorization is delegated rather than shared, permissions are checked at the moment of action, the agent waits when consent is genuinely needed, and every action stays attributable. Those are the right claims. This post is what they look like in running code.
+Our last post on background agents, by Megan McMahon (Strategic Account Executive at Arcade), made four claims: authorization is delegated rather than shared, permissions are checked at the moment of action, the agent waits when consent is genuinely needed, and every action stays attributable. Those are the right claims. This post is what they look like in running code.
 
 The demo we'll walk through is a background support engineer. An email arrives describing a bug. With nobody watching, an agent files a Linear ticket, spins up a Daytona sandbox, reproduces the bug, fixes it, opens a PR, updates the ticket, and posts a summary to Slack. The interesting part is not that it can do this. The interesting part is everything that constrains it while it does.
 
@@ -76,7 +76,9 @@ The skill tells the agent that `HITL_CHECKPOINT` is a governance checkpoint rath
 
 **Constrain.** The branch-protection rule matches on inputs, not just tool names. The agent can push all day to `fix/buggy-api-20260706-141530`, and physically cannot push to `main`. So "the AI opened a PR for review" is a property the system enforces, not a behavior you hope the model exhibits.
 
-**Stamp.** The third rule doesn't block anything. It rewrites the inputs on the way through, forcing `draft: true` onto every `CreatePullRequest` call the agent makes. So an agent physically cannot open a ready-to-merge PR — every one arrives as a draft that a human has to promote. The agent can pass `draft: false`; the gateway overwrites it. This is worth dwelling on, because the tempting version — "tell the agent in its prompt to always open drafts" — is exactly the guarantee you don't have: a prompt is a request, and the whole point of governance is the thing the agent can't talk its way out of. The override is on a real parameter the tool accepts, enforced gateway-side, not a label bolted on by convention.
+**Stamp.** The third rule doesn't block anything. It rewrites the inputs on the way through, forcing `draft: true` onto every `CreatePullRequest` call the agent makes. So an agent physically cannot open a ready-to-merge PR; every one arrives as a draft that a human has to promote. The agent can pass `draft: false`; the gateway overwrites it. This is worth dwelling on, because the tempting version, telling the agent in its prompt to always open drafts, is exactly the guarantee you don't have: a prompt is a request, and the whole point of governance is the thing the agent can't talk its way out of. The override is on a real parameter the tool accepts, enforced gateway-side.
+
+It's worth being precise about what enforcement can and can't reach here, because the honest version is more useful than the tidy one. `CreatePullRequest` has no `labels` field, so the gateway cannot stamp a label onto the PR at creation the way it stamps `draft`. The `ai-generated` labels you see on the PR come from a separate step in the agent's procedure, where it tags its own work via a labeling tool after the PR exists. That's a convention the audit log records, not an injection the agent can't avoid. The distinction matters: the draft is a guarantee, the label is a habit. Reach for an input override when the parameter exists on the call you're already governing; reach for policy on the labeling call itself when you need the label to be a guarantee too.
 
 ## Just-in-time means the answer can change while the job sleeps
 
@@ -86,12 +88,12 @@ Because the hook fires on every call, the running agent feels the change on its 
 
 ## The audit trail is queryable, not aspirational
 
-Every hook invocation is logged with the endpoint, the tool, the inputs, and the decision. Here is one real run of this demo, from the email trigger to the merged-ready PR, every governed decision in order:
+Every hook invocation is logged with the endpoint, the tool, the inputs, and the decision. Here is one real run of this demo, from the email trigger to the open draft PR, every governed decision in order:
 
 ```
-Linear/CreateIssue        ALLOWED   file ticket VOI-5
+Linear/CreateIssue        ALLOWED   file the triage ticket
 Daytona/CreateSandbox     BLOCKED   HITL_CHECKPOINT: needs human approval
-  — human approves out of band (30s) —
+  .. human approves out of band (30s) ..
 Daytona/CreateSandbox     ALLOWED   retry after approval
 Github/WhoAmI             ALLOWED   git identity = the acting human
 Daytona/RunCommand        ALLOWED   reproduce → fix → tests green
@@ -99,7 +101,7 @@ Daytona/GitPush           ALLOWED   branch fix/buggy-api-… (never main)
 Github/CreatePullRequest  ALLOWED   draft: true injected by policy
 ```
 
-That produced PR #1, authored by the human the agent acted for, touching one file (`buggy-api/src/handler.py`, +1 −3), opened as a draft the agent couldn't opt out of:
+That produced a draft PR, authored by the human the agent acted for, touching one file (`buggy-api/src/handler.py`, +1 −3), opened as a draft the agent couldn't opt out of:
 
 ![One governed run: every CATE decision from trigger to PR, ending in a human-authored draft PR the gateway forced open](./pr-receipt.svg)
 

@@ -6,3 +6,12 @@ __pycache__/
 
 # locally-built CATE binary
 cate-server/cate-server
+
+# dashboard event ledger (local run history)
+.dashboard-ledger.json
+
+# Orca/git worktrees — separate checkouts, never part of this tree
+.claude/worktrees/
+
+# slideshow project (unfinished; lives in its own worktree)
+slides/

@@ -198,7 +198,7 @@ hitl_watcher() {
                     "toolkit": "Daytona",
                     "tool": "CreateSandbox",
                     "action": "block",
-                    "error_message": "HITL_CHECKPOINT: Sandbox creation requires human approval. Config: {{inputs}}"
+                    "error_message": "HITL_CHECKPOINT: Sandbox creation requires human approval."
                   },
                   {
                     "toolkit": "Daytona",
@@ -222,8 +222,11 @@ hitl_watcher() {
             }' > /dev/null 2>&1
           log "HITL block restored for next run"
 
-          # Clear logs so watcher doesn't re-trigger on old CHECK_FAILED entries
-          curl -sf -X DELETE "${cate_url}/_logs" >/dev/null 2>&1 || true
+          # Deliberately NOT clearing /_logs here. The seen_file above already
+          # dedupes by execution_id, so re-triggering isn't a risk — and wiping
+          # the log destroys the CHECK_FAILED entry for the block that just
+          # happened, which is the single most important line in the audit
+          # trail. Act 4 shows the denial; it has to still be there.
         fi
       done <<< "$blocked"
     fi
@@ -464,11 +467,15 @@ fi
 PROCESSED_FILE="/tmp/arcade-demo-processed.txt"
 touch "$PROCESSED_FILE"
 
+# Gmail.SearchThreads takes subject/sender/body as ARRAYS of strings. Passing a
+# bare string fails with `subject: Input should be a valid list` on every poll,
+# and the poller then silently never matches anything. Verify against
+# GET /v1/tools/Gmail.SearchThreads if this demo ever goes quiet.
 if [ -n "$WATCH_SENDER" ]; then
-  gmail_input="{\"subject\": \"buggy api\", \"sender\": \"${WATCH_SENDER}\", \"label_ids\": [\"UNREAD\"]}"
+  gmail_input="{\"subject\": [\"buggy api\"], \"sender\": [\"${WATCH_SENDER}\"], \"label_ids\": [\"UNREAD\"]}"
   gmail_query="subject:(buggy api) from:${WATCH_SENDER} label:UNREAD"
 else
-  gmail_input="{\"subject\": \"buggy api\", \"label_ids\": [\"UNREAD\"]}"
+  gmail_input="{\"subject\": [\"buggy api\"], \"label_ids\": [\"UNREAD\"]}"
   gmail_query="subject:(buggy api) label:UNREAD"
 fi
 

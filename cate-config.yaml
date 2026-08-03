@@ -12,7 +12,7 @@ pre:
     - toolkit: "Daytona"
       tool: "CreateSandbox"
       action: block
-      error_message: "HITL_CHECKPOINT: Sandbox creation requires human approval. Config: {{inputs}}"
+      error_message: "HITL_CHECKPOINT: Sandbox creation requires human approval."
 
     # Block direct pushes to main/master
     - toolkit: "Daytona"

@@ -8,7 +8,6 @@ def get_page(page: int, limit: int = 10) -> list[Item]:
     """Return a page of items. Pages are 1-indexed."""
     if page < 1:
         return []
-    # BUG: offset = page * limit produces duplicates on page 2
-    # Fix: offset = (page - 1) * limit
+    # Pages are 1-indexed: page 1 -> offset 0, page 2 -> offset limit, etc.
     offset = page * limit
     return ITEMS[offset : offset + limit]
