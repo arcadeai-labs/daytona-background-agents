@@ -16,3 +16,4 @@ cate-server/cate-server
 # slideshow project (unfinished; lives in its own worktree)
 slides/
 .dashboard-run.log
+PRESENTER.md
