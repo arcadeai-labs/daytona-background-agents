@@ -862,7 +862,6 @@ function paintSlide(){
       ${s.act?`<div class="sact">${esc(s.act)}</div>`:''}
     </div>
     <h2>${esc(s.title||'').replace(/\n/g,'<br>')}</h2>
-    ${s.cue?`<div class="scue"><b>STAGE</b><span>${esc(s.cue)}</span></div>`:''}
     ${s.code?`<div class="term"><div class="termbar">
         <div class="tdot" style="background:#ff5f56"></div>
         <div class="tdot" style="background:#ffad09"></div>
