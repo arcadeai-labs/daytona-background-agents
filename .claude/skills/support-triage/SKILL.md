@@ -28,12 +28,43 @@ be blocked on purpose. That is governance working, not the demo breaking.
 7. **Verify.** Run the tests again to confirm the fix.
 8. **Ship a branch.** Create a feature branch named `fix/buggy-api-<YYYYMMDD-HHmmss>`
    using the current timestamp, commit, push, and open a PR. Do not push to main —
-   policy blocks it, so don't try.
-9. **Clean up.** Delete the sandbox.
-10. **Close the loop.** Update the Linear ticket to `In Review` with the PR link.
-11. **Tell the team.** Send a Slack message to the channel named in your launch prompt,
+   policy blocks it, so don't try. The PR will be forced to draft by policy.
+9. **Mark it as agent work.** State in the PR body that an agent opened this, which
+   ticket it came from, and which tests now pass. The gateway's tool set has no
+   label-writing tool, so the PR body is where a reviewer learns this — don't rely
+   on labels.
+10. **Clean up.** Delete the sandbox.
+11. **Close the loop.** Move the Linear ticket forward and add the PR link. Use
+    `In Review` if that state exists; otherwise use `In Progress`.
+12. **Tell the team.** Send a Slack message to the channel named in your launch prompt,
     summarizing what you did.
-12. **Write the report.** Create a Google Doc with a full triage report.
+13. **Write the report.** Append the full triage report to the Linear ticket's
+    description with `Linear.UpdateIssue` — the incoming report, what you found,
+    what you changed, test results before and after, and every policy decision
+    that affected you. There is no comment tool in your tool set; edit the
+    description instead.
+
+## Degraded mode — GitHub is the only hard requirement
+
+Not every tool in the procedure will be connected. If a call fails because a
+toolkit isn't authorized or isn't in your tool set, do NOT stop and do NOT ask
+for setup — degrade the step and keep going. The run succeeds if a correct
+draft PR exists at the end; everything else is nice-to-have.
+
+- **No Linear** — skip the ticket. Carry the full triage report in the PR body
+  instead, and say the ticket was skipped and why.
+- **No Daytona** — work through GitHub directly: read the failing test and the
+  source with `Github.GetFileContents`, create a branch, apply the fix with
+  `Github.CreateFile` / `Github.UpdateFileLines`, and open the PR. You cannot
+  run the tests this way, so say so plainly in the PR body: state what the fix
+  is, why the tests should pass, and that a human must run them before merge.
+  Never claim you verified what you didn't.
+- **No Slack** — skip the message; the PR body is the summary of record.
+- **No Gmail** — irrelevant at this point; the bug report already reached you
+  in your launch prompt.
+
+List every degraded step in your final report. A shorter honest run beats a
+longer one that stalls asking for credentials nobody is around to grant.
 
 ## Governance
 

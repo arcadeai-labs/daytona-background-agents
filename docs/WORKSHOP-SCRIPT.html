@@ -1,0 +1,139 @@
+<h1>Background Agents That Won't Get You Fired</h1>
+<p><i>Full 60-minute speaker script. Bracketed text is stage direction; quoted text is meant to be said close to verbatim. Running clock in the left margin of each heading.</i></p>
+
+<h2>Before the room fills</h2>
+<p>Run this the night before <b>and</b> the morning of. Live demos die from stale tokens, not bad code.</p>
+<pre>cd background-agents-workshop
+claude --version &amp;&amp; arcade --version &amp;&amp; ngrok version &amp;&amp; jq --version
+arcade logout &amp;&amp; arcade login          # token expires inside the hour — do this last
+arcade whoami
+grep -c "YOUR_KEY_HERE\|your_ngrok" .env
+cd buggy-api &amp;&amp; python3 -m pytest -q; cd ..   # MUST fail
+./audit-check.sh clear &amp;&amp; rm -f /tmp/arcade-demo-*.txt</pre>
+<p>Confirm Gmail, Linear, GitHub, Slack and Daytona are all connected for your Arcade user, the <code>DEMO</code> team exists in Linear with a <code>Bug</code> label, and the Gmail <code>SearchThreads</code> schema patch is in place — <code>subject</code> must be passed as an array. Without that patch the poller silently matches nothing and the demo never fires. Have the recorded run open in a background tab.</p>
+
+<h2>0:00–0:10 — Cold open: install, then first win (10 min)</h2>
+<p>[No slides. Screen shows their machines, not yours.]</p>
+<p>"Before I show you anything, connect Arcade to whatever client you already have open. Then ask that client what tools it can now reach, and have it send you a Slack message."</p>
+<p>[Put the config on screen. Each person needs their own key and their own user id — the per-user header is the entire point, not boilerplate.]</p>
+<pre>{
+  "mcpServers": {
+    "arcade": {
+      "type": "http",
+      "url": "https://api.arcade.dev/mcp/&lt;their-gateway-slug&gt;",
+      "headers": {
+        "Authorization": "Bearer arc_proj_THEIR_OWN_KEY",
+        "Arcade-User-Id": "them@their-company.com"
+      }
+    }
+  }
+}</pre>
+<p>[Install first, ask second. A client that hasn't connected can only guess what Arcade is, and thirty different guesses is a bad opening minute. A connected one answers from its own tool list.]</p>
+<p>[At minute 8, whatever the state of the room, land the turn. Everything after this hangs off it.]</p>
+<p>"You just gave a model authenticated reach into your real accounts. It acted as <i>you</i> — not as a bot token with a shared password. Nothing in that config constrains what it does next. Right now you're watching it. The rest of this hour is about the hour when you're not."</p>
+<p><b>Hard time-box at 10 minutes. Expect a third of the room to fail</b> — corp laptops, no MCP-capable client, no Claude plan, VPN eating the OAuth callback. Fallbacks in order: pair up with someone who got in, or send them to the local track, which needs no account at all. Nobody sits blocked.</p>
+<p><b>Do not hand out your own key to unblock people.</b> One identity shared across a room means they are all acting as you, in your workspaces — and the audit trail you're about to show them will say so.</p>
+
+<h2>0:10–0:13 — Act 0: The claim (3 min)</h2>
+<p>[No terminal. One slide, or just the whiteboard. Trimmed hard, because the cold open already made this point on their own laptops.]</p>
+<p>"Background agents run on a schedule or a trigger. Nobody is there to click approve. In a few minutes you'll watch one fix a bug end to end, and the interesting part is not that it can. It's everything that stops it from doing anything else."</p>
+<p>[Draw three boxes. Leave them up for the rest of the hour and point at them as each one shows up.]</p>
+<ol>
+<li><b>Trigger</b> — you own this. Today it's an email poller. Tomorrow it's cron, a webhook, CI, Inngest. Arcade does not wake your agent up.</li>
+<li><b>Procedure</b> — a skill, not an agent. A markdown file the harness loads.</li>
+<li><b>Governance</b> — the gateway: delegated per-user auth, policy checked at the moment of every action, and an audit trail.</li>
+</ol>
+
+<h2>0:13–0:23 — Act 1: Show the pieces (10 min)</h2>
+<p>"Everything fits on screen. That's the point."</p>
+<pre>ls</pre>
+<p>[Walk exactly three files, in this order. Resist opening a fourth.]</p>
+<pre>cat .claude/skills/support-triage/SKILL.md</pre>
+<p>"This is the agent. All of it. A numbered procedure with governance notes. The harness is Claude Code, unmodified. If we switch to Cursor next quarter, this file comes with us."</p>
+<pre>cat cate-config.yaml</pre>
+<p>"This is the policy. Three rules, three flavors of governance. Sandbox creation is blocked pending a human — that's <b>stop</b>. Pushes to main are blocked always — that's <b>constrain</b>. Every PR is forced into draft — that's <b>stamp</b>. The agent cannot opt out of any of them, because they run gateway-side, not agent-side. It's not a prompt asking it nicely."</p>
+<pre>cat buggy-api/src/handler.py     # the off-by-one lives in get_page()
+cd buggy-api &amp;&amp; python3 -m pytest -q; cd ..</pre>
+<p>"And this is the victim: a real repo with a real failing test. Two failed, one passed."</p>
+
+<h2>0:23–0:38 — Act 2: Fire the trigger (15 min)</h2>
+<pre>./run.sh</pre>
+<p>[Then send the email from your phone, held up on camera, from the audience's point of view. Subject <b>buggy api</b>, body describing the pagination bug. Or <code>./trigger-email.sh</code> if the room is remote.]</p>
+<p>[Now narrate the terminal. Four beats:]</p>
+<p><b>1. The poller sees the email</b> and launches <code>claude</code> with a three-line prompt that names the skill and hands over the email body. Say the line: "the skill does the rest."</p>
+<p><b>2. The agent files the Linear ticket.</b> Point at the attribution on the ticket. "It acted as me, through my OAuth grant. Not as a bot token that everyone on the team shares the password to."</p>
+<p><b>3. The agent asks Daytona for a sandbox — and hits the wall.</b></p>
+<pre>HITL_CHECKPOINT: Sandbox creation requires human approval.</pre>
+<p>[<b>Stop dead here. This is the money beat.</b> Say nothing for a beat and let the room read the agent's own explanation of why it's blocked and that it's waiting. Do not talk over it.]</p>
+<p>"The deny is a message the agent can read. It knows why it stopped, it knows what it's waiting for, and nothing crashed — no exception, no half-finished state. And notice what the approval is: not a click inside our app. It's an out-of-band change to policy, made by someone who isn't the agent."</p>
+<p><b>4. The watcher auto-approves after 30 seconds</b> — or run <code>./hitl-approve.sh</code> yourself for effect. The agent retries the same call and proceeds.</p>
+
+<h2>0:38–0:48 — Act 3: Watch it work (10 min)</h2>
+<p>[Mostly narration while the agent runs. Call these out as they scroll past; don't read the log aloud.]</p>
+<ul>
+<li>Clone into the sandbox. Git identity set from <code>Github.WhoAmI</code> — attribution again, now on the commit itself.</li>
+<li>Failing test reproduced first, <i>then</i> the fix applied. Tests green.</li>
+<li>Branch <code>fix/buggy-api-&lt;timestamp&gt;</code> pushed. If anyone asks "what if it pushed to main" — it can't. Offer to prove it in Q&amp;A by asking the agent to try, live.</li>
+<li>PR opens <b>as a draft it never asked for</b>. Show it in the browser. Policy stamped it on the way out.</li>
+<li>Ticket moves to In Review. Slack summary lands in <code>#demo-engineering</code>.</li>
+</ul>
+
+<h2>0:48–0:55 — Act 4: The receipts (7 min)</h2>
+<p>"The demo isn't the PR. The demo is the audit trail."</p>
+<pre>./audit-check.sh logs</pre>
+<p>"Every tool call, every input, every policy decision — attributable to the human the agent acted for. In production this streams to your SIEM over OpenTelemetry. An agent running while you sleep is as accountable as one you're watching over the shoulder."</p>
+<p>[Then the live policy change. This is the beat that lands hardest with security people.]</p>
+<pre>./hitl-approve.sh --restore     # re-block sandbox creation</pre>
+<p>"Policy is evaluated at the moment of action, not at setup. Revoke a user, downgrade a role, change a rule — the running agent feels it on its next call. Nothing to redeploy, nothing to restart."</p>
+<p>[<b>Cut the second bug email.</b> That's where these seven minutes come from. State the effect; don't spend four minutes re-running the loop to show it.]</p>
+
+<h2>0:55–1:00 — Act 5: What you'd take home (5 min)</h2>
+<p>[Point back at the three boxes on the whiteboard, in order.]</p>
+<ul>
+<li><b>The trigger was 100 lines of bash.</b> Replace it with whatever fires in your stack. Arcade's job starts at the first tool call.</li>
+<li><b>The agent was a markdown file.</b> Version it, review it, ship it like code.</li>
+<li><b>The governance was config.</b> No changes to the tools, no changes to the agent, no SDK in your way.</li>
+</ul>
+<p>Closer: "The runtime is a commodity. What's scarce is authenticated tools, reusable procedures, and the governance that lets an agent run with nobody watching."</p>
+<p>[Land the closer here, right after the audit trail — not after the PR. The PR proves a capability they already believe in. The audit trail proves accountability they currently cannot produce.]</p>
+<p><b>Q&amp;A prompts that reliably work:</b> "What if the agent edits the test instead of the code?" — the skill forbids it, PR review catches it, the audit log proves it. And "why not just a service account?" — walk the delegated-auth section of the README.</p>
+
+<h2>Alternate second half: hands-on track (30 min, no accounts)</h2>
+<p>If the room skews hands-on, drop Acts 3 and 5 and run this instead. It needs only <code>git</code>, <code>go</code> and <code>python3</code> — it's the only part thirty laptops can reliably do at once.</p>
+<p><b>1. Clone and reproduce (5 min)</b></p>
+<pre>git clone https://github.com/arcadeai-labs/daytona-background-agents
+cd daytona-background-agents/buggy-api
+python3 -m venv .venv &amp;&amp; .venv/bin/pip install -r requirements.txt
+.venv/bin/python -m pytest -q        # 2 failed, 1 passed — the bug is real
+cd ..</pre>
+<p><b>2. Run the policy server and get told no (10 min)</b></p>
+<pre>cd cate-server &amp;&amp; go build -o cate-server . &amp;&amp; ./cate-server -config ../cate-config.yaml -port 8888 &amp;
+cd ..
+curl -s -X POST localhost:8888/pre -H 'Content-Type: application/json' -d '{
+  "execution_id":"me-1",
+  "tool":{"name":"CreateSandbox","toolkit":"Daytona"},
+  "inputs":{"name":"triage"},
+  "context":{"user_id":"you@example.com"},"servers":{}
+}'
+# -> {"code":"CHECK_FAILED","error_message":"HITL_CHECKPOINT: ..."}</pre>
+<p>Have them try the other two rules: <code>GitPush</code> with <code>"branch":"main"</code> (blocked) versus a feature branch (fine), and <code>CreatePullRequest</code> (allowed — but look at the <code>override</code> in the response, <code>draft: true</code> got injected).</p>
+<p><b>3. Be the human in the loop (5 min)</b></p>
+<pre>./hitl-approve.sh            # flip the rule, re-run the CreateSandbox curl -> OK
+./hitl-approve.sh --restore  # put the wall back, re-run -> blocked again</pre>
+<p><b>4. Read the receipts (5 min)</b> — <code>./audit-check.sh logs</code> shows every request they just made, with the decision attached.</p>
+<p><b>5. Loop and graph engineering (10 min)</b> — both run on a bare <code>python3</code>, no credentials, no network.</p>
+<pre>python3 examples/loop_engineering.py --stuck          # loop escalates instead of spinning
+python3 examples/graph_engineering.py --skip-review   # denied edge prunes the subtree</pre>
+<p>Stop on the loop example's first iteration: the model proposes weakening a test assertion and the harness refuses. That's <code>SKILL.md</code> step 6 moved out of the prompt, where the agent can't argue with it. The graph example's <code>EDGE_POLICY</code> is the same idea one level up — policy on a handoff between agents rather than on a single tool call.</p>
+<p>Debrief: "Everything you just did with curl is exactly what the agent experienced in the live demo. Governance lives in the gateway, so it doesn't matter whether the caller is a model or a human with curl. Same rules, same denials, same audit trail."</p>
+
+<h2>Contingencies</h2>
+<table border="1" cellpadding="6" cellspacing="0">
+<tr><th>Failure</th><th>Recovery</th></tr>
+<tr><td>Arcade token expired mid-demo</td><td><code>arcade logout &amp;&amp; arcade login</code>, restart <code>run.sh</code>. Pre-flight catches this — the token expires inside the hour.</td></tr>
+<tr><td>Gmail poller sees nothing</td><td>Check the <code>WATCH_SENDER</code> filter and the <code>buggy api</code> subject; send from the allowed address. Confirm the <code>SearchThreads</code> array-subject patch is applied.</td></tr>
+<tr><td>Agent skips the skill</td><td>The poller prompt names it explicitly. If it still free-styles, restart, blame the demo gods, and show <code>SKILL.md</code> as the artifact instead.</td></tr>
+<tr><td>HITL approval doesn't fire</td><td>Run <code>./hitl-approve.sh</code> manually. The watcher is a convenience, not the mechanism.</td></tr>
+<tr><td>Daytona sandbox slow to start</td><td>Narrate <code>./audit-check.sh logs</code> while waiting. It's the better content anyway.</td></tr>
+<tr><td>Wifi dies</td><td>The recorded run. Always have the recorded run.</td></tr>
+</table>

@@ -16,7 +16,7 @@ if [ "${1:-}" = "--restore" ]; then
             "toolkit": "Daytona",
             "tool": "CreateSandbox",
             "action": "block",
-            "error_message": "HITL_CHECKPOINT: Sandbox creation requires human approval. Config: {{inputs}}"
+            "error_message": "HITL_CHECKPOINT: Sandbox creation requires human approval."
           },
           {
             "toolkit": "Daytona",
@@ -26,7 +26,7 @@ if [ "${1:-}" = "--restore" ]; then
             "error_message": "Direct push to protected branch blocked. Use a feature branch."
           },
           {
-            "toolkit": "GitHub",
+            "toolkit": "Github",
             "tool": "CreatePullRequest",
             "action": "proceed",
             "override": {
@@ -61,7 +61,7 @@ else
             "error_message": "Direct push to protected branch blocked. Use a feature branch."
           },
           {
-            "toolkit": "GitHub",
+            "toolkit": "Github",
             "tool": "CreatePullRequest",
             "action": "proceed",
             "override": {
