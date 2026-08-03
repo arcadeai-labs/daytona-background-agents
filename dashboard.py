@@ -515,20 +515,20 @@ PAGE = r"""<!doctype html>
   .out{margin-top:11px;font-size:13px;color:var(--dim);white-space:pre-wrap;
        max-height:0;overflow:hidden;transition:max-height .25s}
   .out.show{max-height:150px;overflow:auto}
-  .cols2{display:grid;grid-template-columns:1fr 340px;align-items:start}
+  .cols2{display:grid;grid-template-columns:1fr 460px;align-items:start}
   main{padding:0 0 60px;min-width:0}
   #oplog{position:sticky;top:150px;max-height:calc(100vh - 170px);overflow-y:auto;
       border-left:1px solid var(--line);padding:14px 16px 30px;background:#181211}
-  .oph2{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim);
-      margin-bottom:12px}
-  .opempty{color:#6f5f58;font-size:13px;line-height:1.5}
+  .oph2{font-size:14px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim);
+      margin-bottom:14px}
+  .opempty{color:#6f5f58;font-size:15px;line-height:1.5}
   .ople{margin-bottom:14px;border:1px solid var(--line);border-radius:10px;overflow:hidden}
-  .ople .ophead{display:flex;gap:8px;align-items:baseline;padding:8px 12px;
-      background:#251b19;font-size:12px}
+  .ople .ophead{display:flex;gap:8px;align-items:baseline;padding:11px 14px;
+      background:#251b19;font-size:16px}
   .ople .ophead b{color:var(--accent);font-weight:600}
   .ople .ophead span{color:#6f5f58;margin-left:auto;font-variant-numeric:tabular-nums}
-  .ople pre{margin:0;padding:10px 12px;font-size:12px;line-height:1.55;color:#a5948c;
-      white-space:pre-wrap;word-break:break-word;max-height:180px;overflow-y:auto}
+  .ople pre{margin:0;padding:12px 14px;font-size:15px;line-height:1.6;color:#cfc1ba;
+      white-space:pre-wrap;word-break:break-word;max-height:240px;overflow-y:auto}
   .ople.err .ophead b{color:var(--block)}
   @media (max-width:1100px){.cols2{grid-template-columns:1fr}#oplog{display:none}}
   .row{display:grid;grid-template-columns:88px 128px 1fr 118px 22px;
