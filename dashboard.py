@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Governance dashboard — the projector view of what the agent is doing.
+"""Governance dashboard - the projector view of what the agent is doing.
 
 The terminal is the wrong surface for a room: the interesting events scroll past
 in 10pt monospace between pages of agent chatter. This serves one page, legible
@@ -13,7 +13,7 @@ Three states, which are the three governance moves in cate-config.yaml:
   STAMPED   policy rewrote the call  (draft: true on every PR)
 
 Why it keeps its own ledger: run.sh:226 issues DELETE /_logs inside the HITL
-approve path, so CATE's own log loses the denial seconds after it happens — the
+approve path, so CATE's own log loses the denial seconds after it happens - the
 exact entry Act 4 needs. This polls continuously, dedupes, and appends to
 .dashboard-ledger.json, so the history survives both that wipe and a restart.
 
@@ -39,7 +39,7 @@ HERE = pathlib.Path(__file__).resolve().parent
 LEDGER = HERE / ".dashboard-ledger.json"
 
 # The only commands the page can run. Fixed argv lists, never shell strings and
-# never anything the browser supplies — the page picks an action by name.
+# never anything the browser supplies - the page picks an action by name.
 ACTIONS = {
     "trigger": ["./trigger-email.sh"],
     "approve": ["./hitl-approve.sh"],
@@ -85,87 +85,27 @@ def save_ledger():
 RUN_LOG = HERE / ".dashboard-run.log"
 
 # The deck, folded in so the whole hour happens on one page. Copy is lifted from
-# the HyperFrames deck verbatim — that version renders blank past slide 1, and a
+# the HyperFrames deck verbatim - that version renders blank past slide 1, and a
 # plain DOM deck can't fail that way on stage.
 #   kicker: small label above  ·  title: the line  ·  body: the paragraph
 #   items:  [label, text] pairs  ·  code: monospace block  ·  act: clock hint
 SLIDES = [
-    {"act": "holding", "kicker": "start now",
-     "cue": "you, before doors: press start \u00b7 wait for the green READY pill \u00b7 reset feed",
-     "title": "Background agents that won't get you fired",
-     "body": "Connect, then ask: \u201csummarize my last 3 commits.\u201d "
-             "(Sharing your screen? Ask for this repo's open issues instead.)",
-     "code": "uv tool install arcade-mcp\n"
-             "arcade login\n"
-             "arcade connect claude-code \\\n"
-             "  --tool Github.WhoAmI \\\n"
-             "  --tool Github.GetUserRecentActivity \\\n"
-             "  --tool Github.GetRepository"},
-    {"act": "0:08", "kicker": "before the demo",
-     "title": "Ask it: \u201cwhat would you use this for?\u201d",
-     "body": "Hold that thought."},
-    {"act": "0:10", "kicker": "the cold open",
-     "title": "Would you let Claude loose in this casino\nwith your Q3 budget?",
-     "body": "Of course not. And not because Claude is dumb."},
-    {"act": "0:12", "kicker": "the example",
-     "title": "The slot machine is a background agent.",
-     "items": [["unattended", "Runs all night. Nobody watching."],
-               ["bounded", "Only plays games the floor installed."],
-               ["HITL", "At $1,200 it locks and pages a human."],
-               ["audited", "Every spin on camera."]]},
-    {"act": "0:14", "kicker": "our version",
-     "title": "It's 3 a.m. A user is stuck.\nWhat can your agent do to help?",
-     "body": "Same floor. Different building."},
-    {"act": "0:15", "kicker": "three layers",
-     "title": "Arcade only owns one layer.",
-     "items": [["trigger", "Yours \u2014 cron, webhook, email."],
-               ["procedure", "One markdown file."],
-               ["governance", "Config the agent can't opt out of."]]},
-    {"act": "0:16", "kicker": "the three moves",
-     "title": "Stop. Constrain. Stamp.",
-     "items": [["stop", "Sandbox blocks until a human \u2014 the pit boss."],
-               ["constrain", "No pushes to main \u2014 the table limit."],
-               ["stamp", "Every PR forced to draft \u2014 chips, not cash."]]},
-    {"act": "0:20", "kicker": "going live",
-     "cue": "Esc \u2192 live feed \u00b7 press SEND TRIGGER EMAIL \u00b7 when the red row lands, talk, then press APPROVE SANDBOX",
-     "title": "Watch what it does when it's told no.",
-     "code": "HITL_CHECKPOINT: Sandbox creation requires human approval."},
-    {"act": "0:48", "kicker": "the receipts",
-     "cue": "Esc \u2192 feed \u00b7 click the STAMPED row: draft:true it never asked for \u00b7 click a BLOCKED row: rule_match",
-     "title": "The demo isn't the PR.\nIt's the audit trail.",
-     "body": "The eye in the sky, for agents."},
-    {"act": "0:50", "kicker": "the moment",
-     "cue": "Esc \u2192 feed \u00b7 press RE-BLOCK (Act 4) \u00b7 watch the CreateSandbox pill flip to block, live",
-     "title": "Policy is checked when the agent acts,\nnot when you deployed it."},
-    {"act": "extra", "kicker": "loop engineering",
-     "title": "A loop that can't stop is a runaway.",
-     "items": [["budget", "Hard cap on iterations."],
-               ["exit test", "Tests green, not self-report."],
-               ["guardrail", "It tried to weaken a test. Refused."]]},
-    {"act": "extra", "kicker": "graph engineering",
-     "title": "Graphs make agent orgs programmable.",
-     "items": [["concurrency", "Three reviewers at once."],
-               ["topology", "A block stalls a subtree, not the world."],
-               ["edges", "No push unless 2 of 3 reviews pass."]]},
-    {"act": "0:55", "kicker": "takeaways",
-     "title": "Take three things home.",
-     "items": [["trigger", "100 lines of bash."],
-               ["agent", "A markdown file."],
-               ["governance", "Config."]]},
-    {"act": "1:00", "kicker": "your turn",
-     "title": "Run the governance loop yourself.\nNo account required.",
-     "code": "git clone github.com/arcadeai-labs/daytona-background-agents\n"
-             "open HANDOUT.md   # every command from this hour"},
-    {"act": "Q&A", "kicker": "question",
-     "title": "What if it edits the test instead of the code?",
-     "items": [["skill", "Forbids it."],
-               ["review", "The draft PR catches it."],
-               ["audit", "The log proves it."]]},
-    {"act": "Q&A", "kicker": "question",
-     "title": "Why not a service account?",
-     "items": [["attribution", "The log would name a robot."],
-               ["scope", "Union of everyone's permissions."],
-               ["delegated", "Revoke the human, the agent loses it."]]},
+    {'act': 'holding', 'kicker': 'walk-in', 'title': "Background agents that won't get you fired", 'body': 'Want to cook along? Fork this repo now and open HANDOUT.md. Everyone else: sit tight, we start with a question.', 'code': 'github.com/arcadeai-labs/daytona-background-agents\n\nfork it. clone it. open HANDOUT.md.'},
+    {'act': '0:03', 'kicker': 'the example', 'title': 'The slot machine is a background agent.', 'items': [['unattended', 'Runs all night. Nobody watching.'], ['bounded', 'Only plays games the floor installed.'], ['HITL', 'At $1,200 it locks and pages a human.'], ['audited', 'Every spin on camera.']]},
+    {'act': '0:06', 'kicker': 'our version', 'title': "It's 3 a.m. A user is stuck.\nWhat can your agent do to help?", 'body': 'Same floor. Different building.'},
+    {'act': '0:08', 'kicker': 'now you connect', 'cue': 'you, before doors: press start · wait for the green READY pill · reset feed', 'title': 'Your turn: give a model real reach.', 'body': "Connect, then ask: “summarize my last 3 commits.” (Sharing your screen? Ask for this repo's open issues instead.)", 'code': 'uv tool install arcade-mcp\narcade login\narcade connect claude-code \\\n  --tool Github.WhoAmI \\\n  --tool Github.GetUserRecentActivity \\\n  --tool Github.GetRepository'},
+    {'act': '0:16', 'kicker': 'before the demo', 'title': 'Ask it: “what would you use this for?”', 'body': 'Hold that thought.'},
+    {'act': '0:18', 'kicker': 'three layers', 'title': 'Arcade only owns one layer.', 'items': [['trigger', 'Yours. cron, webhook, email.'], ['procedure', 'One markdown file.'], ['governance', "Config the agent can't opt out of."]]},
+    {'act': '0:19', 'kicker': 'the three moves', 'title': 'Stop. Constrain. Stamp.', 'items': [['stop', 'Sandbox blocks until a human. the pit boss.'], ['constrain', 'No pushes to main. the table limit.'], ['stamp', 'Every PR forced to draft. chips, not cash.']]},
+    {'act': '0:22', 'kicker': 'going live', 'cue': 'Esc → live feed · press SEND TRIGGER EMAIL · when the red row lands, talk, then press APPROVE SANDBOX', 'title': "Watch what it does when it's told no.", 'code': 'HITL_CHECKPOINT: Sandbox creation requires human approval.'},
+    {'act': '0:48', 'kicker': 'the receipts', 'cue': 'Esc → feed · click the STAMPED row: draft:true it never asked for · click a BLOCKED row: rule_match', 'title': "The demo isn't the PR.\nIt's the audit trail.", 'body': 'The eye in the sky, for agents.'},
+    {'act': '0:50', 'kicker': 'the moment', 'cue': 'Esc → feed · press RE-BLOCK (Act 4) · watch the CreateSandbox pill flip to block, live', 'title': 'Policy is checked when the agent acts,\nnot when you deployed it.'},
+    {'act': 'extra', 'kicker': 'loop engineering', 'title': "A loop that can't stop is a runaway.", 'items': [['budget', 'Hard cap on iterations.'], ['exit test', 'Tests green, not self-report.'], ['guardrail', 'It tried to weaken a test. Refused.']]},
+    {'act': 'extra', 'kicker': 'graph engineering', 'title': 'Graphs make agent orgs programmable.', 'items': [['concurrency', 'Three reviewers at once.'], ['topology', 'A block stalls a subtree, not the world.'], ['edges', 'No push unless 2 of 3 reviews pass.']]},
+    {'act': '0:55', 'kicker': 'takeaways', 'title': 'Take three things home.', 'items': [['trigger', '100 lines of bash.'], ['agent', 'A markdown file.'], ['governance', 'Config.']]},
+    {'act': '1:00', 'kicker': 'your turn', 'title': 'Run the governance loop yourself.\nNo account required.', 'code': 'git clone github.com/arcadeai-labs/daytona-background-agents\nopen HANDOUT.md   # every command from this hour'},
+    {'act': 'Q&A', 'kicker': 'question', 'title': 'What if it edits the test instead of the code?', 'items': [['skill', 'Forbids it.'], ['review', 'The draft PR catches it.'], ['audit', 'The log proves it.']]},
+    {'act': 'Q&A', 'kicker': 'question', 'title': 'Why not a service account?', 'items': [['attribution', 'The log would name a robot.'], ['scope', "Union of everyone's permissions."], ['delegated', 'Revoke the human, the agent loses it.']]},
 ]
 
 
@@ -175,7 +115,7 @@ def start_demo():
     Deliberately not in ACTIONS: run.sh is long-running, so it can't be handled
     by the capture-output-and-wait path the other actions use."""
     if is_running("run.sh"):
-        return True, "already running — check the pill: if it says READY, just press 'send trigger email'"
+        return True, "already running - check the pill: if it says READY, just press 'send trigger email'"
     try:
         with open(RUN_LOG, "wb") as log:
             subprocess.Popen(
@@ -186,18 +126,18 @@ def start_demo():
                 stdin=subprocess.DEVNULL,
                 start_new_session=True,
             )
-        return True, f"run.sh started — arming takes ~30s. Log: {RUN_LOG.name}"
+        return True, f"run.sh started - arming takes ~30s. Log: {RUN_LOG.name}"
     except OSError as e:
         return False, str(e)
 
 
 def stop_demo():
     """run.sh traps its own exit and deletes the CATE hook and plugin, so a plain
-    TERM is the correct way to stop it — never KILL, or the hooks leak."""
+    TERM is the correct way to stop it - never KILL, or the hooks leak."""
     if not is_running("run.sh"):
         return False, "run.sh is not running"
     subprocess.run(["pkill", "-f", "run.sh"], capture_output=True)
-    return True, "sent TERM to run.sh — it cleans up its own hook and plugin"
+    return True, "sent TERM to run.sh - it cleans up its own hook and plugin"
 
 
 def is_running(pattern):
@@ -207,7 +147,7 @@ def is_running(pattern):
 
 
 def reset_feed(cate_port):
-    """Clean slate for the projector: wipe the ledger AND CATE's own log —
+    """Clean slate for the projector: wipe the ledger AND CATE's own log -
     clearing only one means the poller re-ingests the other within a second.
     Leaves /tmp/arcade-demo-processed.txt alone on purpose: deleting it while
     run.sh polls would re-fire the agent on every old unread trigger email."""
@@ -217,12 +157,12 @@ def reset_feed(cate_port):
         )
         urllib.request.urlopen(req, timeout=3).read()
     except (urllib.error.URLError, OSError):
-        pass  # CATE down is fine — the ledger wipe still applies
+        pass  # CATE down is fine - the ledger wipe still applies
     with _lock:
         _ledger.clear()
         _seen.clear()
         save_ledger()
-    return True, "feed reset — ledger and CATE log cleared, fresh wall"
+    return True, "feed reset - ledger and CATE log cleared, fresh wall"
 
 
 def run_action(name, cate_port=8888):
@@ -310,9 +250,57 @@ def demo_state(cate_port):
     return st
 
 
+_log_off = [0]
+
+
+def ingest_runlog():
+    """[demo] lines from run.sh, as feed rows. The boot sequence, the email
+    pickup, and the HITL banners are the story's narration; they belong on
+    the timeline, not in a strip that disappears."""
+    import datetime
+    try:
+        size = RUN_LOG.stat().st_size
+    except OSError:
+        return
+    if size < _log_off[0]:
+        _log_off[0] = 0          # run.sh restarted and truncated the log
+    if size == _log_off[0]:
+        return
+    with open(RUN_LOG, "rb") as f:
+        f.seek(_log_off[0])
+        chunk = f.read()
+    # only consume complete lines; partial writes wait for the next poll
+    cut = chunk.rfind(b"\n")
+    if cut < 0:
+        return
+    _log_off[0] += cut + 1
+    now = datetime.datetime.now().astimezone().isoformat()
+    with _lock:
+        for i, raw in enumerate(chunk[:cut].split(b"\n")):
+            line = raw.decode("utf-8", "replace").strip()
+            if not line.startswith("[demo]"):
+                continue
+            msg = line[len("[demo]"):].strip()
+            e = {
+                "timestamp": now,
+                "endpoint": "/runlog",
+                "body": {
+                    "execution_id": f"log-{_log_off[0]}-{i}",
+                    "tool": {"toolkit": "demo", "name": msg},
+                    "inputs": {},
+                    "context": {"user_id": "run.sh"},
+                },
+                "response": {"code": "LOG"},
+                "rule_match": "",
+            }
+            _seen.add(_key(e))
+            _ledger.append(e)
+        save_ledger()
+
+
 def poll(cate_port, stop):
     """Server-side poller. Runs regardless of whether a browser is open, which is
-    the point — the wipe happens whether or not anyone is watching."""
+    the point - the wipe happens whether or not anyone is watching."""
     while not stop.is_set():
         try:
             with urllib.request.urlopen(
@@ -336,11 +324,12 @@ def poll(cate_port, stop):
                     save_ledger()
         except (urllib.error.URLError, OSError, json.JSONDecodeError):
             pass  # CATE restarting; the ledger is what persists
+        ingest_runlog()
         stop.wait(0.75)
 
 
 PAGE = r"""<!doctype html>
-<html><head><meta charset="utf-8"><title>Agent governance — live</title>
+<html><head><meta charset="utf-8"><title>Agent governance - live</title>
 <style>
   :root{
     --bg:#07090d; --panel:#0d1117; --fg:#e9eff7; --dim:#7d8da0; --line:#1a2330;
@@ -391,27 +380,57 @@ PAGE = r"""<!doctype html>
            animation:cuepulse 1.6s infinite}
   @keyframes cuepulse{0%,100%{box-shadow:0 0 0 0 rgba(63,185,80,.5)}
                       60%{box-shadow:0 0 0 8px rgba(63,185,80,0)}}
-  #deckwrap{display:none;position:fixed;inset:0;z-index:50;background:
-      radial-gradient(1200px 600px at 10% -10%, #12213a 0%, transparent 60%),
-      radial-gradient(900px 500px at 110% 0%, #1c1430 0%, transparent 55%), #07090d;
-      padding:6vh 8vw;overflow:auto}
-  #deckwrap.on{display:block}
-  #deck{max-width:1200px;margin:0 auto}
-  .sact{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:26px}
-  .skick{font-size:15px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:14px}
-  #deck h2{font-size:52px;line-height:1.14;letter-spacing:-.025em;margin:0 0 26px;
-           font-weight:650;font-family:system-ui,-apple-system,"Inter",sans-serif}
-  .sbody{font-size:25px;line-height:1.5;color:#b9c8da;max-width:33ch+40ch;margin:0 0 24px;
+  #deckwrap{display:none;position:fixed;inset:0;z-index:50;overflow:auto;
+      background:
+        radial-gradient(1400px 700px at 8% -12%, #14243d 0%, transparent 58%),
+        radial-gradient(1000px 560px at 108% -4%, #221636 0%, transparent 55%),
+        radial-gradient(900px 900px at 50% 118%, #0d1b16 0%, transparent 50%),
+        #06080c}
+  #deckwrap.on{display:flex;align-items:center;justify-content:center;
+      padding:5vh 7vw 9vh}
+  #deck{width:100%;max-width:1280px;animation:sIn .45s cubic-bezier(.2,.8,.2,1)}
+  @keyframes sIn{from{opacity:0;transform:translateY(14px) scale(.985)}
+                 to{opacity:1;transform:none}}
+  .stopline{display:flex;align-items:center;gap:14px;margin-bottom:4.5vh}
+  .skick{font-size:clamp(13px,1.1vw,17px);letter-spacing:.28em;text-transform:uppercase;
+         color:var(--accent);font-weight:700}
+  .skick::before{content:"";display:inline-block;width:34px;height:2px;
+         background:var(--accent);vertical-align:middle;margin-right:14px}
+  .sact{margin-left:auto;font-size:12px;letter-spacing:.12em;color:var(--dim);
+        border:1px solid var(--line);border-radius:999px;padding:5px 14px;
+        text-transform:uppercase}
+  #deck h2{margin:0 0 3.5vh;font-weight:750;letter-spacing:-.035em;
+           font-family:system-ui,-apple-system,"SF Pro Display","Inter",sans-serif;
+           color:var(--fg)}
+  #deck.t-statement h2{font-size:clamp(44px,6.4vw,96px);line-height:1.04}
+  #deck.t-cards h2, #deck.t-code h2{font-size:clamp(34px,4.4vw,64px);line-height:1.08}
+  .sbody{font-size:clamp(19px,2vw,30px);line-height:1.45;color:#9fb0c3;
+         max-width:36ch;margin:0 0 3vh;
          font-family:system-ui,-apple-system,"Inter",sans-serif}
-  .scode{font-size:21px;padding:20px 24px;margin:0 0 24px;color:#7ee787;
-         background:#0d1117;border:1px solid var(--line);border-radius:10px;white-space:pre-wrap}
-  .sitems{display:grid;gap:18px;margin-top:8px}
-  .sitem{display:grid;grid-template-columns:190px 1fr;gap:22px;align-items:baseline;
-         padding-top:16px;border-top:1px solid var(--line)}
-  .sk{font-size:19px;color:var(--stamp);font-weight:600}
-  .sv{font-size:21px;line-height:1.45;color:#c6d3e2;
-      font-family:system-ui,-apple-system,"Inter",sans-serif}
-  .snum{margin-top:40px;color:var(--dim);font-size:14px}
+  #deck.t-statement .sbody{font-size:clamp(22px,2.4vw,36px);color:#b9c8da}
+  .term{border:1px solid #202b3a;border-radius:14px;overflow:hidden;margin:0 0 3vh;
+        box-shadow:0 24px 60px -24px rgba(0,0,0,.7)}
+  .termbar{display:flex;align-items:center;gap:8px;padding:12px 16px;
+        background:#10161f;border-bottom:1px solid #1a2330}
+  .tdot{width:11px;height:11px;border-radius:50%}
+  .termbar span{margin-left:10px;color:#5b6b7e;font-size:12px;letter-spacing:.08em}
+  .scode{font-size:clamp(16px,1.6vw,24px);line-height:1.65;padding:22px 26px;margin:0;
+        color:#7ee787;background:#0a0f16;white-space:pre-wrap}
+  .sitems{display:grid;gap:16px;margin-top:1vh;
+        grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+  .sitem{background:linear-gradient(180deg,#0e141d 0%,#0b1018 100%);
+        border:1px solid #1c2635;border-radius:16px;padding:24px 24px 22px;
+        border-top:3px solid var(--ac,#58a6ff)}
+  .sk{font-size:clamp(15px,1.4vw,21px);font-weight:750;color:var(--ac,#58a6ff);
+        letter-spacing:.01em;margin-bottom:10px;text-transform:lowercase}
+  .sv{font-size:clamp(15px,1.5vw,22px);line-height:1.45;color:#b3c2d3;
+        font-family:system-ui,-apple-system,"Inter",sans-serif}
+  .sfoot{display:flex;align-items:center;gap:18px;margin-top:5vh}
+  .dots{display:flex;gap:7px}
+  .dot2{width:7px;height:7px;border-radius:50%;background:#26313f;cursor:pointer;
+        transition:.2s}
+  .dot2.here{background:var(--accent);transform:scale(1.35)}
+  .snum{color:#3d4a59;font-size:13px;font-variant-numeric:tabular-nums;margin-left:auto}
   .deckhint{position:fixed;bottom:18px;left:0;right:0;text-align:center;
             color:var(--dim);font-size:13px;opacity:.7}
   .op.deck{margin-left:8px}
@@ -458,8 +477,15 @@ PAGE = r"""<!doctype html>
   .BLOCKED{color:var(--block);background:#ff5f5622}
   .STAMPED{color:var(--stamp);background:#e3b34120}
   .HUMAN{color:var(--accent);background:#58a6ff1f}
-  .scue{margin:1.5vh 0;padding:1.4vh 1.4vw;border:1px dashed var(--accent);border-radius:10px;
-        color:var(--accent);font-size:clamp(13px,1.3vw,20px);letter-spacing:.02em}
+  .LOG{color:#5b6b7e;background:transparent;font-weight:500}
+  .row.is-LOG{padding-top:7px;padding-bottom:7px}
+  .row.is-LOG .tool{font-size:14px;font-weight:400;color:#7d8da0;font-style:italic}
+  .row.is-LOG .kit{color:#4a5867}
+  .scue{display:flex;gap:12px;align-items:baseline;margin:0 0 3vh;padding:14px 18px;
+        border:1px dashed #2f5f9e;border-radius:12px;background:#0d1726;
+        color:#79b8ff;font-size:clamp(13px,1.25vw,19px)}
+  .scue b{font-size:11px;letter-spacing:.22em;color:#4a90e2;border:1px solid #2f5f9e;
+        border-radius:5px;padding:2px 8px;flex:none}
   .row.is-HUMAN{border-left:3px solid var(--accent);padding-left:27px}
   .caret{color:var(--dim);font-size:12px;transition:transform .18s}
   .row.open .caret{transform:rotate(90deg)}
@@ -484,7 +510,7 @@ PAGE = r"""<!doctype html>
 <header>
   <div class="top">
     <h1><span class="dot" id="dot"></span>Agent governance</h1>
-    <div class="who">acting as <b id="who">—</b></div>
+    <div class="who">acting as <b id="who">-</b></div>
     <div class="counts">
       <button class="chip all on" data-f="ALL"><b id="n-all">0</b>calls</button>
       <button class="chip a" data-f="ALLOWED"><b id="n-ok">0</b>allowed</button>
@@ -513,7 +539,7 @@ PAGE = r"""<!doctype html>
   <div class="links">
     <span>open in a tab:</span>
     <a href="https://github.com/arcadeai-labs/daytona-background-agents" target="_blank" rel="noopener">repo</a>
-    <a href="https://github.com/arcadeai-labs/daytona-background-agents/tree/main/examples" target="_blank" rel="noopener">loop + graph examples</a>
+    <a href="https://github.com/arcadeai-labs/daytona-background-agents/tree/workshop-ready/examples" target="_blank" rel="noopener">loop + graph examples</a>
     <a href="https://github.com/arcadeai-labs/daytona-background-agents/pulls" target="_blank" rel="noopener">pull requests</a>
     <a href="https://linear.app/arcadedev/team/DEMO/active" target="_blank" rel="noopener">Linear board</a>
     <a href="https://www.arcade.dev/blog/arcade-background-agents" target="_blank" rel="noopener">the why (blog)</a>
@@ -525,7 +551,7 @@ PAGE = r"""<!doctype html>
 <script>
 const DEMO_KITS = ['Daytona','Github','GitHub','Linear','Slack','Gmail'];
 // run.sh polls the inbox through the gateway every 15s, so each poll is a real
-// governed call. True, and useless on a projector — it buries everything else.
+// governed call. True, and useless on a projector - it buries everything else.
 const POLLER_TOOLS = ['SearchThreads','GetThread'];
 let events = [], filter = 'ALL';
 const openKeys = new Set();
@@ -533,6 +559,7 @@ function ekey(e){ return [(e.timestamp||''),(e.body?.execution_id||''),(e.body?.
 
 function classify(r){
   if(!r) return 'ALLOWED';
+  if(r.code === 'LOG') return 'LOG';
   if(r.code === 'HUMAN') return 'HUMAN';
   if(r.code === 'CHECK_FAILED') return 'BLOCKED';
   if(r.override) return 'STAMPED';
@@ -546,7 +573,7 @@ function render(){
   const newest = document.getElementById('newest').checked;
   const keep = e => {
     const kit = e.body?.tool?.toolkit || '', name = e.body?.tool?.name || '';
-    if (kit === 'You') return true;   // operator clicks always visible
+    if (kit === 'You' || kit === 'demo') return true;   // operator + narrator rows always visible
     if (hidePoll && kit === 'Gmail' && POLLER_TOOLS.includes(name)) return false;
     if (demoOnly && !DEMO_KITS.includes(kit)) return false;
     return true;
@@ -554,7 +581,7 @@ function render(){
   let list = events.filter(e =>
     keep(e) && (filter === 'ALL' || classify(e.response) === filter));
 
-  const counts = {ALLOWED:0, BLOCKED:0, STAMPED:0, HUMAN:0};
+  const counts = {ALLOWED:0, BLOCKED:0, STAMPED:0, HUMAN:0, LOG:0};
   events.filter(keep).forEach(e => counts[classify(e.response)]++);
   document.getElementById('n-all').textContent = counts.ALLOWED+counts.BLOCKED+counts.STAMPED;
   document.getElementById('n-ok').textContent = counts.ALLOWED;
@@ -582,10 +609,10 @@ function render(){
     ${why ? `<div class="why ${st}">└─ ${esc(why)}</div>` : ''}
     <div class="detail" data-k="${esc(ekey(e))}">
       <div class="grid">
-        <div class="cell"><div class="k">acting as</div><div class="v">${esc(ctx.user_id||'—')}</div></div>
-        <div class="cell"><div class="k">hook</div><div class="v">${esc(e.endpoint||'—')}</div></div>
+        <div class="cell"><div class="k">acting as</div><div class="v">${esc(ctx.user_id||'-')}</div></div>
+        <div class="cell"><div class="k">hook</div><div class="v">${esc(e.endpoint||'-')}</div></div>
         <div class="cell"><div class="k">rule matched</div><div class="v">${esc(e.rule_match||'none')}</div></div>
-        <div class="cell"><div class="k">execution id</div><div class="v">${esc(e.body?.execution_id||'—')}</div></div>
+        <div class="cell"><div class="k">execution id</div><div class="v">${esc(e.body?.execution_id||'-')}</div></div>
         ${ctx.secrets?.length ? `<div class="cell"><div class="k">secrets used</div><div class="v">${esc(ctx.secrets.join(', '))}</div></div>`:''}
       </div>
       <div class="lbl">inputs the agent sent</div>
@@ -651,12 +678,12 @@ async function refreshState(){
     bits.push(s.armed
       ? '<span class="pill armed">policy armed</span>'
       : '<span class="pill dis">policy DISARMED</span>');
-    // three states, not two: down / arming / READY — "ready" is the poller's
+    // three states, not two: down / arming / READY - "ready" is the poller's
     // own waiting banner, i.e. the moment "send trigger email" will land
     bits.push(!s.run_sh
-      ? '<span class="pill dis">stopped — press start</span>'
+      ? '<span class="pill dis">stopped - press start</span>'
       : s.ready
-        ? '<span class="pill armed">READY — send the email</span>'
+        ? '<span class="pill armed">READY - send the email</span>'
         : '<span class="pill warn">arming… (~30s)</span>');
     // while arming, stream the boot log into the output strip
     if (s.run_sh && !s.ready && (s.boot||[]).length){
@@ -699,7 +726,7 @@ function cueFor(state, ev){
   const started = named('CreateIssue').length || named('ListTeams').length;
   if (!started)
     return {t:'Armed and polling. Press <b>send trigger email</b> when you are ready.', a:'trigger'};
-  return {t:'Agent is working — narrate the feed. Nothing to press.', a:null};
+  return {t:'Agent is working - narrate the feed. Nothing to press.', a:null};
 }
 function paintCue(state){
   const c = cueFor(state, events);
@@ -724,17 +751,35 @@ function showDeck(on){
 }
 function paintSlide(){
   const s = slides[deckIdx]; if (!s) return;
-  const items = (s.items||[]).map(([k,v]) =>
-    `<div class="sitem"><div class="sk">${esc(k)}</div><div class="sv">${esc(v)}</div></div>`).join('');
-  document.getElementById('deck').innerHTML = `
-    <div class="sact">${esc(s.act||'')}</div>
-    ${s.kicker?`<div class="skick">${esc(s.kicker)}</div>`:''}
+  const ACC = ['#58a6ff','#3fb950','#e3b341','#ff5f56'];
+  const type = (s.items&&s.items.length) ? 't-cards' : (s.code ? 't-code' : 't-statement');
+  const items = (s.items||[]).map(([k,v],i) =>
+    `<div class="sitem" style="--ac:${ACC[i%4]}"><div class="sk">${esc(k)}</div><div class="sv">${esc(v)}</div></div>`).join('');
+  const dots = slides.map((_,i) =>
+    `<span class="dot2 ${i===deckIdx?'here':''}" data-i="${i}"></span>`).join('');
+  const deck = document.getElementById('deck');
+  deck.className = type;
+  deck.innerHTML = `
+    <div class="stopline">
+      ${s.kicker?`<div class="skick">${esc(s.kicker)}</div>`:''}
+      <div class="sact">${esc(s.act||'')}</div>
+    </div>
     <h2>${esc(s.title||'').replace(/\n/g,'<br>')}</h2>
-    ${s.cue?`<div class="scue">\u{1F3AC} ${esc(s.cue)}</div>`:''}
-    ${s.code?`<pre class="scode">${esc(s.code)}</pre>`:''}
+    ${s.cue?`<div class="scue"><b>STAGE</b><span>${esc(s.cue)}</span></div>`:''}
+    ${s.code?`<div class="term"><div class="termbar">
+        <div class="tdot" style="background:#ff5f56"></div>
+        <div class="tdot" style="background:#e3b341"></div>
+        <div class="tdot" style="background:#3fb950"></div>
+        <span>arcade gateway</span></div>
+      <pre class="scode">${esc(s.code)}</pre></div>`:''}
     ${s.body?`<p class="sbody">${esc(s.body)}</p>`:''}
     ${items?`<div class="sitems">${items}</div>`:''}
-    <div class="snum">${deckIdx+1} / ${slides.length}</div>`;
+    <div class="sfoot"><div class="dots">${dots}</div>
+      <div class="snum">${deckIdx+1} / ${slides.length}</div></div>`;
+  deck.style.animation = 'none'; void deck.offsetWidth; deck.style.animation = '';
+  deck.querySelectorAll('.dot2').forEach(d => d.addEventListener('click', ev => {
+    ev.stopPropagation(); deckIdx = +d.dataset.i; paintSlide();
+  }));
 }
 function move(d){ deckIdx = Math.max(0, Math.min(slides.length-1, deckIdx+d)); paintSlide(); }
 document.getElementById('present').addEventListener('click', () => showDeck(true));
@@ -761,7 +806,7 @@ OPERATOR_LABELS = {
 
 
 def log_operator(name):
-    """The human's click is part of the story — put it on the timeline where
+    """The human's click is part of the story - put it on the timeline where
     it happened, between the deny and the retry."""
     import datetime
     label = OPERATOR_LABELS.get(name)
@@ -856,7 +901,7 @@ if __name__ == "__main__":
     print("Stage controls enabled (trigger / approve / re-block).")
     print("Ctrl+C to stop.")
     try:
-        # 127.0.0.1, never 0.0.0.0 — this page can run commands, and conference
+        # 127.0.0.1, never 0.0.0.0 - this page can run commands, and conference
         # wifi is not a place to expose that.
         ThreadingHTTPServer(("127.0.0.1", args.port), Handler).serve_forever()
     except KeyboardInterrupt:

@@ -11,7 +11,7 @@ Three layers, deliberately separated:
 Companion reading: [How Does Arcade.dev Work With My Background Agents?](https://www.arcade.dev/blog/arcade-background-agents) covers the why; this repo is the how. `WORKSHOP.md` is a 60-minute live-workshop run-of-show built on this demo.
 
 **Want to poke at the mechanics without signing up for anything?** `examples/` has
-two runnable pieces — loop engineering (budgets, exit tests, guardrails around a
+two runnable pieces - loop engineering (budgets, exit tests, guardrails around a
 fix-verify cycle) and graph engineering (parallel dispatch, human checkpoints as
 nodes, policy on the edges between agents). Both need only `python3`. The policy
 server in `cate-server/` also runs standalone: see the hands-on track in
@@ -35,7 +35,7 @@ Your Machine                       Arcade Cloud                     Daytona Clou
 
 ## Two ways in
 
-**Track A — the mechanics, no accounts (10 minutes).** Everything that makes this
+**Track A - the mechanics, no accounts (10 minutes).** Everything that makes this
 interesting except the live agent: the policy engine denying you, loop
 engineering, graph engineering. Needs `python3`, `go`, and `git`. No signup, no
 API key, no network. Start here.
@@ -58,20 +58,20 @@ cd .. && curl -s -X POST localhost:8888/pre -H 'Content-Type: application/json' 
 See `examples/README.md` and the hands-on track in `WORKSHOP.md` for the guided
 version.
 
-**Track B — the full loop (an afternoon, and it costs money).** The email-triggered
+**Track B - the full loop (an afternoon, and it costs money).** The email-triggered
 agent that files a ticket, fixes a bug in a cloud sandbox, and opens a PR. Be
 honest with yourself about the setup before you start:
 
 | Need | Why | Free? |
 | --- | --- | --- |
-| Anthropic plan or API key | Claude Code is the runtime | **No** — paid |
+| Anthropic plan or API key | Claude Code is the runtime | **No** - paid |
 | Arcade account + project | Gateway, token vault, policy hooks | Signup required |
 | Contextual Access (CATE) on your Arcade plan | `run.sh` registers a plugin + pre-execution hook. Without it, the governance half doesn't run. | **Verify for your plan** |
 | Gmail, Linear, Slack, GitHub, Daytona | Five OAuth grants for the tools the agent calls | Signup each |
-| A Linear team with a `Bug` label and an `In Review` state | `SKILL.md` expects both | — |
-| ngrok account | Tunnels CATE webhooks to your laptop. One token per person — a shared token means everyone acts as you. | Free tier OK |
-| A **fork** of this repo | The agent pushes a branch and opens a PR against `DEMO_REPO_URL` | — |
-| macOS or Linux | `run.sh` uses BSD `sed -i ''` and `lsof`; on Windows use WSL | — |
+| A Linear team with a `Bug` label and an `In Review` state | `SKILL.md` expects both | - |
+| ngrok account | Tunnels CATE webhooks to your laptop. One token per person - a shared token means everyone acts as you. | Free tier OK |
+| A **fork** of this repo | The agent pushes a branch and opens a PR against `DEMO_REPO_URL` | - |
+| macOS or Linux | `run.sh` uses BSD `sed -i ''` and `lsof`; on Windows use WSL | - |
 
 CLI tooling for Track B:
 
@@ -109,7 +109,7 @@ cd daytona-demo
 `ORG_ID` and `PROJECT_ID` are auto-detected from `~/.arcade/credentials.yaml` (set by `arcade login` + `arcade project set`).
 
 **Fork first.** The agent clones `DEMO_REPO_URL`, pushes a branch to it, and opens
-a PR against it — so it must be a repo you can push to. Fork this repo, then set
+a PR against it - so it must be a repo you can push to. Fork this repo, then set
 `DEMO_REPO_URL` to your fork. Pointing it at someone else's repo fails at the push
 step, and no amount of policy config will save you.
 
@@ -133,7 +133,7 @@ arcade logout && arcade login && arcade project set <your-project-id>
 
 ### 3. Authorize Google (Gmail)
 
-The `run.sh` script handles this automatically — it will open a browser for Google OAuth if needed. You only need to do this once.
+The `run.sh` script handles this automatically - it will open a browser for Google OAuth if needed. You only need to do this once.
 
 ## Running the Demo
 
@@ -184,16 +184,16 @@ Send an email from the `WATCH_SENDER` address (or apply the `support-triage` lab
 
 Once triggered by an email, Claude Code autonomously:
 
-1. **Creates a Linear ticket** — team: DEMO, priority: High, labels: Bug + auto-triage
-2. **Creates a Daytona sandbox** — CATE blocks it (HITL checkpoint). A background watcher detects the block, waits 10 seconds (talk about governance here), then auto-approves. Claude Code retries and succeeds.
+1. **Creates a Linear ticket** - team: DEMO, priority: High, labels: Bug + auto-triage
+2. **Creates a Daytona sandbox** - CATE blocks it (HITL checkpoint). A background watcher detects the block, waits 10 seconds (talk about governance here), then auto-approves. Claude Code retries and succeeds.
 3. **Clones this repo** into the sandbox (`DEMO_REPO_URL` in `.env`)
-4. **Navigates to `buggy-api/`** and runs tests — identifies the failing `test_page_two_starts_at_item_11`
-5. **Reads source code** — finds the off-by-one error in `src/handler.py`
-6. **Fixes the bug** — corrects the pagination logic
-7. **Re-runs tests** — confirms all pass
-8. **Creates branch, commits, pushes, opens PR** — CATE forces it to `draft: true`
-9. **Updates the Linear ticket** — moves to "In Review" with PR link
-10. **Sends Slack summary** — posts to #demo-engineering
+4. **Navigates to `buggy-api/`** and runs tests - identifies the failing `test_page_two_starts_at_item_11`
+5. **Reads source code** - finds the off-by-one error in `src/handler.py`
+6. **Fixes the bug** - corrects the pagination logic
+7. **Re-runs tests** - confirms all pass
+8. **Creates branch, commits, pushes, opens PR** - CATE forces it to `draft: true`
+9. **Updates the Linear ticket** - moves to "In Review" with PR link
+10. **Sends Slack summary** - posts to #demo-engineering
 
 The HITL auto-approve delay is configurable via `HITL_APPROVE_DELAY` in `.env` (default: 30 seconds, set at `run.sh:119`).
 
@@ -203,9 +203,9 @@ Defined in `cate-config.yaml`:
 
 | Rule                      | What it does                                                                  |
 | ------------------------- | ----------------------------------------------------------------------------- |
-| **HITL sandbox approval** | Blocks `Daytona.create_sandbox` — auto-approved after delay                   |
+| **HITL sandbox approval** | Blocks `Daytona.create_sandbox` - auto-approved after delay                   |
 | **Branch protection**     | Blocks `Daytona.git_push` to `main`/`master`                                  |
-| **PR forced to draft**    | Injects `draft: true` on `Github.CreatePullRequest` — a human must promote it |
+| **PR forced to draft**    | Injects `draft: true` on `Github.CreatePullRequest` - a human must promote it |
 
 ## Stopping the Demo
 
@@ -224,7 +224,7 @@ Press `Ctrl+C`. The cleanup handler automatically:
 | `Engine not healthy`         | Check `ENGINE_URL` in `.env`, verify the engine is running             |
 | `CATE failed to start`       | Check if port 8888 is in use: `lsof -i :8888`                          |
 | `Could not get ngrok URL`    | Check ngrok auth token, or kill existing ngrok: `pkill -f ngrok`       |
-| `MCP init failed`            | Gateway may not be configured — check Arcade dashboard                 |
+| `MCP init failed`            | Gateway may not be configured - check Arcade dashboard                 |
 | `Google auth not completed`  | Re-run `./run.sh`, it will re-prompt for OAuth                         |
 | Email not triggering         | Check `WATCH_SENDER` matches the sender, or use `label:support-triage` |
 
@@ -232,7 +232,7 @@ Press `Ctrl+C`. The cleanup handler automatically:
 
 | File                     | Purpose                                                          |
 | ------------------------ | ---------------------------------------------------------------- |
-| `run.sh`                 | Main entrypoint — sets up everything and starts the email poller |
+| `run.sh`                 | Main entrypoint - sets up everything and starts the email poller |
 | `setup.sh`               | Standalone setup script (registers plugin, hooks, gateway)       |
 | `email-poller.sh`        | Standalone email poller (used by run.sh inline)                  |
 | `.env`                   | Environment variables (credentials, IDs, config)                 |
