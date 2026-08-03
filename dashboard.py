@@ -458,7 +458,22 @@ PAGE = r"""<!doctype html>
   .out{margin-top:11px;font-size:13px;color:var(--dim);white-space:pre-wrap;
        max-height:0;overflow:hidden;transition:max-height .25s}
   .out.show{max-height:150px;overflow:auto}
-  main{padding:0 0 60px}
+  .cols2{display:grid;grid-template-columns:1fr 340px;align-items:start}
+  main{padding:0 0 60px;min-width:0}
+  #oplog{position:sticky;top:150px;max-height:calc(100vh - 170px);overflow-y:auto;
+      border-left:1px solid var(--line);padding:14px 16px 30px;background:#0a0e14}
+  .oph2{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim);
+      margin-bottom:12px}
+  .opempty{color:#4a5867;font-size:13px;line-height:1.5}
+  .ople{margin-bottom:14px;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .ople .ophead{display:flex;gap:8px;align-items:baseline;padding:8px 12px;
+      background:#10161f;font-size:12px}
+  .ople .ophead b{color:var(--accent);font-weight:600}
+  .ople .ophead span{color:#4a5867;margin-left:auto;font-variant-numeric:tabular-nums}
+  .ople pre{margin:0;padding:10px 12px;font-size:12px;line-height:1.55;color:#8da0b5;
+      white-space:pre-wrap;word-break:break-word;max-height:180px;overflow-y:auto}
+  .ople.err .ophead b{color:var(--block)}
+  @media (max-width:1100px){.cols2{grid-template-columns:1fr}#oplog{display:none}}
   .row{display:grid;grid-template-columns:88px 128px 1fr 118px 22px;
        gap:15px;align-items:center;padding:13px 30px;
        border-bottom:1px solid var(--line);cursor:pointer;transition:background .13s}
@@ -539,7 +554,7 @@ PAGE = r"""<!doctype html>
   <div class="links">
     <span>open in a tab:</span>
     <a href="https://github.com/arcadeai-labs/daytona-background-agents" target="_blank" rel="noopener">repo</a>
-    <a href="https://github.com/arcadeai-labs/daytona-background-agents/tree/workshop-ready/examples" target="_blank" rel="noopener">loop + graph examples</a>
+    <a href="https://github.com/arcadeai-labs/daytona-background-agents/tree/main/examples" target="_blank" rel="noopener">loop + graph examples</a>
     <a href="https://github.com/arcadeai-labs/daytona-background-agents/pulls" target="_blank" rel="noopener">pull requests</a>
     <a href="https://linear.app/arcadedev/team/DEMO/active" target="_blank" rel="noopener">Linear board</a>
     <a href="https://www.arcade.dev/blog/arcade-background-agents" target="_blank" rel="noopener">the why (blog)</a>
@@ -547,7 +562,13 @@ PAGE = r"""<!doctype html>
 </header>
 <div id="deckwrap"><div id="deck"></div>
   <div class="deckhint">← → or space to move · Esc back to the live feed</div></div>
+<div class="cols2">
 <main id="feed"><div class="empty">Waiting for the agent's first tool call…</div></main>
+<aside id="oplog">
+  <div class="oph2">operator log</div>
+  <div id="oplogbody"><div class="opempty">your button presses and their output land here</div></div>
+</aside>
+</div>
 <script>
 const DEMO_KITS = ['Daytona','Github','GitHub','Linear','Slack','Gmail'];
 // run.sh polls the inbox through the gateway every 15s, so each poll is a real
@@ -660,13 +681,19 @@ const out = document.getElementById('out');
 document.querySelectorAll('.op').forEach(btn => btn.addEventListener('click', async () => {
   const all = [...document.querySelectorAll('.op')];
   all.forEach(b => b.disabled = true);
-  out.textContent = '$ ' + btn.dataset.a + '…';
-  out.classList.add('show');
+  const started = new Date().toTimeString().slice(0,8);
+  let j = {ok:false, output:'request failed'};
   try{
     const r = await fetch('/act/' + btn.dataset.a, {method:'POST'});
-    const j = await r.json();
-    out.textContent = (j.ok ? '' : '✗ ') + j.output;
-  }catch(e){ out.textContent = '✗ ' + e; }
+    j = await r.json();
+  }catch(e){ j = {ok:false, output:String(e)}; }
+  const body = document.getElementById('oplogbody');
+  body.querySelector('.opempty')?.remove();
+  const entry = document.createElement('div');
+  entry.className = 'ople' + (j.ok ? '' : ' err');
+  entry.innerHTML = `<div class="ophead"><b>${esc(btn.textContent.trim())}</b><span>${started}</span></div>
+    <pre>${esc(j.output)}</pre>`;
+  body.prepend(entry);
   all.forEach(b => b.disabled = false);
   refreshState();
 }));
