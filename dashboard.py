@@ -515,19 +515,29 @@ PAGE = r"""<!doctype html>
   .out{margin-top:11px;font-size:13px;color:var(--dim);white-space:pre-wrap;
        max-height:0;overflow:hidden;transition:max-height .25s}
   .out.show{max-height:150px;overflow:auto}
-  .cols2{display:grid;grid-template-columns:1fr 460px;align-items:start}
+  .cols2{display:grid;grid-template-columns:1fr 560px;align-items:start}
   main{padding:0 0 60px;min-width:0}
   #oplog{position:sticky;top:150px;max-height:calc(100vh - 170px);overflow-y:auto;
       border-left:1px solid var(--line);padding:14px 16px 30px;background:#181211}
   .oph2{font-size:14px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim);
       margin-bottom:14px}
   .opempty{color:#6f5f58;font-size:15px;line-height:1.5}
+  .rrule{display:flex;justify-content:space-between;align-items:center;gap:12px;
+      padding:16px 18px;margin-bottom:12px;border:1px solid var(--line);
+      border-radius:14px;background:#1a1312}
+  .rrule .rt{font-size:18px;font-weight:650;color:var(--fg)}
+  .rrule .rt small{display:block;font-size:13px;font-weight:400;color:#a3928b;margin-top:3px}
+  .rrule .rv{font-size:14px;font-weight:800;letter-spacing:.08em;padding:7px 14px;
+      border-radius:999px}
+  .rv.blockv{color:#ff8a80;background:#ff5f5620;border:1px solid #6e2b28}
+  .rv.stampv{color:#ffc14d;background:#ffad0920;border:1px solid #7a5510}
+  .rv.openv{color:#ffc14d;background:#ffad0915;border:1px solid #7a5510}
   .ople{margin-bottom:14px;border:1px solid var(--line);border-radius:10px;overflow:hidden}
-  .ople .ophead{display:flex;gap:8px;align-items:baseline;padding:11px 14px;
-      background:#251b19;font-size:16px}
+  .ople .ophead{display:flex;gap:8px;align-items:baseline;padding:12px 16px;
+      background:#251b19;font-size:18px}
   .ople .ophead b{color:var(--accent);font-weight:600}
   .ople .ophead span{color:#6f5f58;margin-left:auto;font-variant-numeric:tabular-nums}
-  .ople pre{margin:0;padding:12px 14px;font-size:15px;line-height:1.6;color:#cfc1ba;
+  .ople pre{margin:0;padding:14px 16px;font-size:17px;line-height:1.6;color:#cfc1ba;
       white-space:pre-wrap;word-break:break-word;max-height:240px;overflow-y:auto}
   .ople.err .ophead b{color:var(--block)}
   @media (max-width:1100px){.cols2{grid-template-columns:1fr}#oplog{display:none}}
@@ -629,6 +639,8 @@ PAGE = r"""<!doctype html>
 <aside id="oplog">
   <div class="oph2">operator log</div>
   <div id="oplogbody"><div class="opempty">your button presses and their output land here</div></div>
+  <div class="oph2" style="margin-top:26px">house rules</div>
+  <div id="rules"></div>
 </aside>
 </div>
 <script>
@@ -797,6 +809,18 @@ async function refreshState(){
         + (r.override ? ' +draft' : '') + '</span>');
     }
     document.getElementById('state').innerHTML = bits.join('');
+    const label = {CreateSandbox:['Sandbox creation','the pit boss - a human must approve'],
+                   GitPush:['Push to main','the table limit - never allowed'],
+                   CreatePullRequest:['Every agent PR','chips, not cash - forced to draft']};
+    document.getElementById('rules').innerHTML = s.policy.map(r => {
+      const [t, sub] = label[r.tool] || [r.tool, ''];
+      let v, cls;
+      if (r.override){ v = 'STAMPED +draft'; cls = 'stampv'; }
+      else if (r.action === 'block'){ v = 'BLOCKED'; cls = 'blockv'; }
+      else { v = 'HITL OPEN'; cls = 'openv'; }
+      return `<div class="rrule"><div class="rt">${t}<small>${sub}</small></div>
+        <div class="rv ${cls}">${v}</div></div>`;
+    }).join('');
   }catch(e){}
 }
 refreshState(); setInterval(refreshState, 4000);
