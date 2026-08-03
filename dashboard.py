@@ -110,6 +110,9 @@ SLIDES = [
 ]
 
 
+_run_proc = [None]
+
+
 def start_demo():
     """Launch run.sh detached, so it outlives this request and keeps polling.
 
@@ -119,7 +122,7 @@ def start_demo():
         return True, "already running - check the pill: if it says READY, just press 'send trigger email'"
     try:
         with open(RUN_LOG, "wb") as log:
-            subprocess.Popen(
+            _run_proc[0] = subprocess.Popen(
                 ["./run.sh"],
                 cwd=HERE,
                 stdout=log,
@@ -142,8 +145,11 @@ def stop_demo():
 
 
 def is_running(pattern):
+    if pattern == "run.sh" and _run_proc[0] is not None and _run_proc[0].poll() is None:
+        return True
+    pat = r"bash \./run\.sh" if pattern == "run.sh" else pattern
     return (
-        subprocess.run(["pgrep", "-f", pattern], capture_output=True).returncode == 0
+        subprocess.run(["pgrep", "-f", pat], capture_output=True).returncode == 0
     )
 
 
@@ -213,12 +219,17 @@ def demo_state(cate_port):
     except (urllib.error.URLError, OSError, json.JSONDecodeError):
         pass
 
-    try:
-        st["run_sh"] = subprocess.run(
-            ["pgrep", "-f", "run.sh"], capture_output=True, timeout=5
-        ).returncode == 0
-    except (OSError, subprocess.TimeoutExpired):
-        pass
+    # Ask our own child first (poll() also reaps a zombie, which pgrep would
+    # otherwise keep "seeing"); fall back to pgrep for externally started runs.
+    if _run_proc[0] is not None and _run_proc[0].poll() is None:
+        st["run_sh"] = True
+    else:
+        try:
+            st["run_sh"] = subprocess.run(
+                ["pgrep", "-f", r"bash \./run\.sh"], capture_output=True, timeout=5
+            ).returncode == 0
+        except (OSError, subprocess.TimeoutExpired):
+            pass
 
     # Boot progress: tail the run log so "start" isn't a leap of faith. The
     # poller printing its waiting banner is the "you can send now" signal.

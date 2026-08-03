@@ -529,6 +529,9 @@ READY
 hitl_watcher &
 HITL_WATCHER_PID=$!
 
+# A transient network error must not kill the demo. Everything before this
+# point should fail loudly; nothing after it should fail at all.
+set +e
 while true; do
   result=$(exec_tool -d "{
     \"tool_name\": \"Gmail.SearchThreads\",
