@@ -94,7 +94,20 @@ cd .. && curl -s -X POST localhost:8888/pre -H 'Content-Type: application/json' 
 The point of doing it with curl: the gateway doesn't care whether the caller
 is a model or a human. Same rules, same denials, same audit trail.
 
-## 5. Run the full loop (an afternoon, at home)
+## 5. Only have GitHub connected? It still works
+
+The skill degrades on purpose: GitHub is the only hard requirement. No Linear
+-> the triage report rides in the PR body. No Daytona sandbox -> the agent
+fixes the file through the GitHub API and says plainly that a human must run
+the tests. No Slack -> skipped and noted. And no Gmail needed at all:
+
+```bash
+./triage.sh        # fires the same agent with the canned bug report
+```
+
+The output is still the thing that matters: a draft PR it can't promote.
+
+## 6. Run the full loop (an afternoon, at home)
 
 The README's "Track B" table lists every prerequisite honestly — seven
 services, two of which cost money, and a **fork** of the repo (the agent
@@ -102,7 +115,7 @@ pushes branches and opens PRs against `DEMO_REPO_URL`, so it must be a repo
 you can write to). `WORKSHOP.md` is the full run-of-show if you want to give
 this hour yourself.
 
-## 6. The three lines to remember
+## 7. The three lines to remember
 
 - The runtime is a commodity. The procedure is a markdown file.
 - Governance has three moves — stop, constrain, stamp — and all three are

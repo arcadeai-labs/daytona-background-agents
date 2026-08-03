@@ -44,6 +44,28 @@ be blocked on purpose. That is governance working, not the demo breaking.
     that affected you. There is no comment tool in your tool set; edit the
     description instead.
 
+## Degraded mode — GitHub is the only hard requirement
+
+Not every tool in the procedure will be connected. If a call fails because a
+toolkit isn't authorized or isn't in your tool set, do NOT stop and do NOT ask
+for setup — degrade the step and keep going. The run succeeds if a correct
+draft PR exists at the end; everything else is nice-to-have.
+
+- **No Linear** — skip the ticket. Carry the full triage report in the PR body
+  instead, and say the ticket was skipped and why.
+- **No Daytona** — work through GitHub directly: read the failing test and the
+  source with `Github.GetFileContents`, create a branch, apply the fix with
+  `Github.CreateFile` / `Github.UpdateFileLines`, and open the PR. You cannot
+  run the tests this way, so say so plainly in the PR body: state what the fix
+  is, why the tests should pass, and that a human must run them before merge.
+  Never claim you verified what you didn't.
+- **No Slack** — skip the message; the PR body is the summary of record.
+- **No Gmail** — irrelevant at this point; the bug report already reached you
+  in your launch prompt.
+
+List every degraded step in your final report. A shorter honest run beats a
+longer one that stalls asking for credentials nobody is around to grant.
+
 ## Governance
 
 - If a tool call is denied with `HITL_CHECKPOINT`, this is a human-in-the-loop
